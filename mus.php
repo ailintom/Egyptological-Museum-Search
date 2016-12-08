@@ -532,25 +532,45 @@ if ($helpmode == "aliases") {
                     ReturnResults($result, $musdef[1], $musdef[2], $mus);
                 } elseif ($musdef[0] == 'Torino') {
                     /*                     * ***********************TORINO */
-                    $numaccno = preg_replace("/[^0-9]/", "", $accno);
+                    // $numaccno = preg_replace("/[^0-9]/", "", $accno);
+
+                    $pos = firstnum($accno);
+                    if (!($pos === false)) {
+                        $numaccno = substr($accno, $pos);
+                        //  $pref = substr($accno, 0, $pos);
+                        $endpos = firstnonnum($numaccno);
+                        if (!($endpos === false)) {
+                            $nonnum = substr($numaccno, $endpos);
+                            $numaccno = substr($numaccno, 0, $endpos);
+                        }
+                    }
 
                     if (stripos($accno, 'S') !== false) {
-                        $accno = "S. " . sprintf("%05d", $numaccno);
+                        $accno = "S. " . sprintf("%05d", $numaccno) . $nonnum;
                     }
                     if (stripos($accno, 'prov') !== false) {
-                        $accno = "Provv. " . sprintf("%04d", $numaccno);
+                        $accno = "Provv. " . sprintf("%04d", $numaccno) . $nonnum;
                     }
                     if (stripos($accno, 'CG') !== false) {
-                        $accno = "CGT " . sprintf("%05d", $numaccno);
+                        $accno = "CGT " . sprintf("%05d", $numaccno) . $nonnum;
                     }
                     if (stripos($accno, 'C') !== false) {
-                        $accno = "Cat. " . sprintf("%04d", $numaccno);
+                        $accno = "Cat. " . sprintf("%04d", $numaccno) . $nonnum;
                     }
 
                     $result = mySQLqueryex($musdef[0], 'inv =', $accno);
+                    if ($result->num_rows === 0 and preg_match("/.*\/.*/", $accno)) {
+                        if (preg_match("/^\d.*/", $accno)){
+                            $result = mySQLqueryex($musdef[0], 'inv like ', '%' . str_replace("/", "/%", $accno));
+                        }else{
+                        $result = mySQLqueryex($musdef[0], 'inv like ', str_replace("/", "/%", $accno));
+                        }
+
+                    }
                     if ($result->num_rows === 0) {
 
                         if (!$numaccno == 0) {
+
                             $result = mySQLqueryex($musdef[0], 'STRIP_NON_DIGIT(inv) =', $numaccno);
                         }
                         if ($result->num_rows === 0) {

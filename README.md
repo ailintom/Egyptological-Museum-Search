@@ -1,4 +1,4 @@
-Egyptological-Museum-Search
+Egyptological Museum Search
 A PHP tool to search the objects by inventory numbers in various online museum catalogues
 Author: Alexander Ilin-Tomich
 Created at Johannes Gutenberg University, Mainz
@@ -8,6 +8,9 @@ Created at Johannes Gutenberg University, Mainz
  Includes code snippets originally posted under CC BY-SA 3.0 on http://stackoverflow.com
  (original authors: Stanislav Shabalin, user1467716 and wally) as indicated in the comments to the respective parts
  of the source code.
+
+  Egyptological Museum Search operates on http://static.egyptology.ru/varia/mus.php
+  Source files are available on https://github.com/ailintom/Egyptological-Museum-Search 
  
   This php script should be used as follows:
   .../mus.php?museum=AAA&no=###
@@ -27,3 +30,5 @@ Created at Johannes Gutenberg University, Mainz
 
   The configuration files are json arrays musaliases.json, musconfig.json, museumdefinitions.json.
   Their structure is defined in the comments in mus.php.
+  
+  The tool was designed with Egyptological collections in mind. If you with to adapt it to work with other collections, please mind the "Egyptology-specific" comments in the source code.

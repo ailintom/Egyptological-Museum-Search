@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `invs` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -- Removes non-digits from a string
--- Based on a code-snippets posted by user1467716 and wally 
+-- Based on code-snippets posted by user1467716 and wally 
 -- on http://stackoverflow.com/questions/287105/mysql-strip-non-numeric-characters-to-compare 
 -- under  CC BY-SA 3.0
 DELIMITER $$

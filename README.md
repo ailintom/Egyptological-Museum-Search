@@ -12,6 +12,8 @@ Created at Johannes Gutenberg University, Mainz
   This php script should be used as follows:
   .../mus.php?museum=AAA&no=###
   Where AAA is the museum name and ### is the object's accession number.
+
+  The script was developed for PHP 5.3 and was tested to work with a MySQL-compatible Percona Database on an Apache server of a shared web-hosting.
   
   It operates in different modes depending on the museum website. 
   It aims to form correct search URLs for museums websites, which support GET queries.
@@ -24,4 +26,4 @@ Created at Johannes Gutenberg University, Mainz
   webid - the number used to form the URL of the object description page. 
 
   The configuration files are json arrays musaliases.json, musconfig.json, museumdefinitions.json.
-  Their structure is defined in the comments in mus.php
+  Their structure is defined in the comments in mus.php.

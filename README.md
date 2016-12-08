@@ -24,7 +24,7 @@ A PHP tool to search the objects by inventory numbers in various online museum c
   It retrieves search results in JSON from the museums, which provide this option.  
   It relies on the information scraped from the museum catalogues that do not support GET queries and do not provide search results
   in JSON. For this end, the script connects to a MySQL database with the scraped information. (The scrape scripts written in R are not included in the current version of the program source).
-  The database can be created using mus.sql. The script connects to it using on the credentials in musconfig.json. 
+  The database can be created using mus.sql. The script connects to it using on the credentials in musconfig.json (which one has to edit accordingly). 
   The scraped data should be stored in the table invs  with the following fields:
     mus - the name of the museum coinciding, as defined in the museumdefinitions.json
     inv - the inventory number

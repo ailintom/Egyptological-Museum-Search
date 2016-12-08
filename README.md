@@ -17,7 +17,11 @@ Created at Johannes Gutenberg University, Mainz
   It aims to form correct search URLs for museums websites, which support GET queries.
   It retrieves search results in JSON from the museums, which provide this option.  
   It relies on information scraped from the museum catalogues, which do not support GET queries and do not provide search results
-  in JSON. For this end, the scipt connects to a MySQL database containing a table invs (created using mus.sql) with the following fields:
+  in JSON. For this end, the script connects to a MySQL database containing a table invs (created using mus.sql and connected to based on the credentials 
+  in musconfig.json) with the following fields:
   mus - the name of the museum coinciding, as defined in the museumdefinitions.json
   inv - the inventory number
   webid - the number used to form the URL of the object description page. 
+
+  The configuration files are json arrays musaliases.json, musconfig.json, museumdefinitions.json.
+  Their structure is defined in the comments in mus.php

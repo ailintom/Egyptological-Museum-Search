@@ -8,6 +8,7 @@
  * https://creativecommons.org/licenses/by-sa/4.0/
  * Includes code snippets originally posted under CC BY-SA 3.0 (attributed to the respective authors in the comments below)
 
+
  * Version history:
  * Version 0.1: 28.05.2015
  * Version 0.2: 14.11.2016

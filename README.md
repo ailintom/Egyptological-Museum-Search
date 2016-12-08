@@ -19,17 +19,18 @@ Created at Johannes Gutenberg University, Mainz
 
   The script was developed for PHP 5.3 and was tested to work with a MySQL-compatible Percona Database on an Apache server of a shared web-hosting.
   
-  It operates in different modes depending on the museum website. 
+  It operates in different modes depending on the architecture of each museum's website. 
   It aims to form correct search URLs for museums websites, which support GET queries.
   It retrieves search results in JSON from the museums, which provide this option.  
-  It relies on information scraped from the museum catalogues, which do not support GET queries and do not provide search results
-  in JSON. For this end, the script connects to a MySQL database containing a table invs (created using mus.sql and connected to based on the credentials 
-  in musconfig.json) with the following fields:
-  mus - the name of the museum coinciding, as defined in the museumdefinitions.json
-  inv - the inventory number
-  webid - the number used to form the URL of the object description page. 
+  It relies on the information scraped from the museum catalogues that do not support GET queries and do not provide search results
+  in JSON. For this end, the script connects to a MySQL database with the scraped information. (The scrape scripts written in R are not included in the current version of the program source).
+  The database can be created using mus.sql. The script connects to it using on the credentials in musconfig.json. 
+  The scraped data should be stored in the table invs  with the following fields:
+    mus - the name of the museum coinciding, as defined in the museumdefinitions.json
+    inv - the inventory number
+    webid - the number used to form the URL of the object description page. 
 
   The configuration files are json arrays musaliases.json, musconfig.json, museumdefinitions.json.
-  Their structure is defined in the comments in mus.php.
+  Their structure is defined in the comments in mus.php. 
   
   The tool was designed with Egyptological collections in mind. If you with to adapt it to work with other collections, please mind the "Egyptology-specific" comments in the source code.

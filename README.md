@@ -10,6 +10,7 @@ Created at Johannes Gutenberg University, Mainz
  of the source code.
 
   Egyptological Museum Search operates on http://static.egyptology.ru/varia/mus.php
+
   Source files are available on https://github.com/ailintom/Egyptological-Museum-Search 
  
   This php script should be used as follows:

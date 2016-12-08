@@ -1,4 +1,4 @@
-# Egyptological-Museum-Search
+Egyptological-Museum-Search
 A PHP tool to search the objects by inventory numbers in various online museum catalogues
 Author: Alexander Ilin-Tomich
 Created at Johannes Gutenberg University, Mainz

@@ -13,53 +13,51 @@
  * Version 0.1: 28.05.2015
  * Version 0.2: 14.11.2016
  * Version 0.3: 22.11.2016
-  First public release
+ * * First public release
  * Version 0.4: 24.11.2016
-  Improved support for MMA (fetching JSON files and redirecting directly to object pages)
+ * * Improved support for MMA (fetching JSON files and redirecting directly to object pages)
  * Version 0.5: 01.12.2016
-  Added support for OIM, Jerusalem and Ny Carlsberg, improved MMA search
+ * * Added support for OIM, Jerusalem and Ny Carlsberg, improved MMA search
  *  Version 0.6: 04.12.2016
-  Added support for Edinburgh. Improvements in MMA and Louvre search
+ * * Added support for Edinburgh. Improvements in MMA and Louvre search
  *  Version 0.7: 07.12.2016
-  Improved code structure. Minor bug fixes.
+ * * Improved code structure. Minor bug fixes.
  *  Version 0.7.1: 08.12.2016
-  Sanitizing input for SQL Queries. Minor improvements for Brooklyn and Boston. First GitHub release
+ * * Sanitizing input for SQL Queries. Minor improvements for Brooklyn and Boston. First GitHub release
  * 
  * 
  * This php script should be used as follows:
-  .../mus.php?museum=AAA&no=###
-  Where AAA is the museum name and ### is the object's accession number.
-
+ * .../mus.php?museum=AAA&no=###
+ * Where AAA is the museum name and ### is the object's accession number.
  * 
-  The array of MySQL connection settings is read from the configuration file musconfig.json into $musconfig
-  Each museum alias definition is itself an array:
-  $musconfig[0] - host
-  $musconfig[1] - user
-  $musconfig[2] - password
-  $musconfig[3] - database name
-  $musconfig[4] - agent string for curl
-  $musconfig[5] - impressum string
-  $musconfig[6] - HTML Header
-  $musconfig[7] - Website title
+ * *  The array of MySQL connection settings is read from the configuration file musconfig.json into $musconfig
+ * Each museum alias definition is itself an array:
+ * $musconfig[0] - host
+ * $musconfig[1] - user
+ * $musconfig[2] - password
+ * $musconfig[3] - database name
+ * $musconfig[4] - agent string for curl
+ * $musconfig[5] - impressum string
+ * $musconfig[6] - HTML Header
+ * $musconfig[7] - Website title
  * 
-  The array of museum definitions is read from the configuration file museumdefinitions.json into $musarray
-  Each museum definition is itself an array:
-  musarray[0] - museum name
-  musarray[1] - url before the acc. no
-  musarray[2] - url after the acc. no
-  musarray[3] - should the museum name in the query be equal to the defined name (true) or just contain it (false)
-  musarray[4] - this museum name should not appear in the select box on the main page
-  musarray[5] - true=this museum website is not searchable with HTTP GET queries and local database with scraped data should be used instead; false=redirect to the search URL on the museum website
-  musarray[6] - url to be loaded if record is not found in the local databse
-  musarray[7] - full name of the museum to be displayed on the Help (.../mus.php?help=help page)
+ * The array of museum definitions is read from the configuration file museumdefinitions.json into $musarray
+ * Each museum definition is itself an array:
+ * musarray[0] - museum name
+ * musarray[1] - url before the acc. no
+ * musarray[2] - url after the acc. no
+ * musarray[3] - should the museum name in the query be equal to the defined name (true) or just contain it (false)
+ * musarray[4] - this museum name should not appear in the select box on the main page
+ * musarray[5] - true=this museum website is not searchable with HTTP GET queries and local database with scraped data should be used instead; false=redirect to the search URL on the museum website
+ * musarray[6] - url to be loaded if record is not found in the local databse
+ * musarray[7] - full name of the museum to be displayed on the Help (.../mus.php?help=help page)
  * 
  * 
-  The array of name aliases is read from the configuration file musaliases.json into $musaliases
-  Each museum alias definition is itself an array:
-  $musaliases[0] - museum alias
-  $musaliases[1] - museum identifier used in museumdefinitions.json / $musarray
-  $musaliases[2] - should the museum name in the query be equal to the defined alias or just contain it
-
+ * The array of name aliases is read from the configuration file musaliases.json into $musaliases
+ * Each museum alias definition is itself an array:
+ * $musaliases[0] - museum alias
+ * $musaliases[1] - museum identifier used in museumdefinitions.json / $musarray
+ * $musaliases[2] - should the museum name in the query be equal to the defined alias or just contain it
  * 
  * The code incorporates code snippets from various http://stackoverflow.com discussions, as indicated in the comments
  */
@@ -129,7 +127,7 @@ function DualPage($url1, $url2) {
 /** Executes a query in the local database, handles errors and returns a mysqli_result object
  */
 function mySQLqueryex($mus, $searchfieldop, $sqlWHERE) {
-    
+
     $musconfig = json_decode(file_get_contents("musconfig.json"), true);
     $mysqli = new mysqli($musconfig[0], $musconfig[1], $musconfig[2], $musconfig[3]);
     if ($mysqli->connect_errno) {
@@ -145,7 +143,7 @@ function mySQLqueryex($mus, $searchfieldop, $sqlWHERE) {
         <?php
         exit();
     }
-    $sql = "SELECT webid, inv FROM invs WHERE mus = '" . $mus . "' and " . $searchfieldop  . "'" . $mysqli->real_escape_string($sqlWHERE) . "' ORDER BY inv";
+    $sql = "SELECT webid, inv FROM invs WHERE mus = '" . $mus . "' and " . $searchfieldop . "'" . $mysqli->real_escape_string($sqlWHERE) . "' ORDER BY inv";
     if (!$result = $mysqli->query($sql)) {
         ?>
         <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN' 'http://www.w3.org/TR/html4/loose.dtd'>
@@ -221,7 +219,7 @@ function ReturnResultsFromArray($res, $pref, $postf, $mus) {
 function RedirUrl($urlinput) {
     ?><!DOCTYPE html><html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><script type="text/javascript">window.location.href = "<?php echo($urlinput); ?>";</script><noscript>
             <meta http-equiv="Refresh" content="0; URL=<?php echo(str_replace(' ', '%20', str_replace('&', '&amp;', $urlinput))); ?>">
-        </noscript><meta charset="utf-8"></head><body><p>&nbsp;<a href="./mus.php?help=impressum">Impressum</a></p></body></html><?php
+            </noscript><meta charset="utf-8"></head><body><p>&nbsp;<a href="./mus.php?help=impressum">Impressum</a></p></body></html><?php
     exit();
 }
 
@@ -334,7 +332,7 @@ if ($helpmode == "aliases") {
         }
     }
     $accno = trim(str_replace($mus, '', $accno)); // removes the name of the museum from the searched string in case the user has entered it twice
-    /*     * *****************                                                       MMA ****************** */
+    /*     * *********************** MMA  */
 // MMA is processed here separately for in case of no match from JSON query, the standard MMA search page will be returned by the usual procedure
     if ($mus === 'MMA') {
         //This part of the code fetches the JSON file with search results from MMA and redirects the user to the results
@@ -375,7 +373,7 @@ if ($helpmode == "aliases") {
             $found = true;
             if ($musdef[5] == true) {
                 if ($musdef[0] == 'OIM') {
-                    /*                     * *********                      OIM ********************* */
+                    /*                     * *********************** OIM  */
                     $pos = firstnum($accno);
                     if (!($pos === false)) { // the procedure replaces the searched OIM number into "E " + the numerical part. This is Egyptology-specific. ("E" is for Egyptian collection in OIM).
                         $accno = "E " . substr($accno, $pos);
@@ -397,7 +395,7 @@ if ($helpmode == "aliases") {
                         ReturnResultsFromArray($mmaids, $musdef[1], $musdef[2], $mus);
                     }
                 } elseif ($musdef[0] == 'BM') {
-                    /*                     * **********************************************************************************BM******************* */
+                    /*                     * ***********************BM */
 // In the following line the script loads JSON with search results for "EA" + the digits contained in the searched acc. no. This is Egyptology-specific. ("EA is for Egyptian collection in BM).
                     $url = "http://collection.britishmuseum.org/sparql.json?query=SELECT+%3Fwebidval%0D%0A%7B+%3Fbigno+rdfs%3Alabel+%22EA" . preg_replace("/[^0-9]/", "", $accno) . "%22+.%0D%0A+%3Fobj+ecrm%3AP1_is_identified_by+%3Fbigno+.%0D%0A+%3Fobj+ecrm%3AP1_is_identified_by+%3Fwebid+.+%0D%0A+%3Fwebid++ecrm%3AP2_has_type+%3Chttp%3A%2F%2Fcollection.britishmuseum.org%2Fid%2Fthesauri%2Fidentifier%2Fcodexid%3E+.%0D%0A+%3Fwebid+rdfs%3Alabel+%3Fwebidval+%0D%0A+%7D%0D%0A&_implicit=false&implicit=true&_equivalent=false&_form=%2Fsparql";
                     $BMjson = json_decode(downloadmusjson($url), true);
@@ -410,34 +408,34 @@ if ($helpmode == "aliases") {
                     $url = "http://" . $musdef[1] . $webid . "&?museumno=" . preg_replace("/[^0-9]/", "", $accno) . $musdef[2];
                     RedirUrl($url);
                 } elseif ($musdef[0] == 'Leiden') {
-                    /*                     * *****************************************************************LEIDEN****************************************************************** */
+                    /*                     * *********************** LEIDEN */
                     $accno = str_replace('Æ', 'AE', $accno);
                     $accno = str_replace(' ', '.', $accno);
                     $accno = str_replace('..', '.', $accno);
-                    
+
                     $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') = ", $accno);
                     if ($result->num_rows === 0) {
                         if (strpos($accno, '/') !== false and substr($accno, 0, 1) !== "F" and substr($accno, 0, 1) !== "f") {
-                            
-                            $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') = ", "F.".$accno);
+
+                            $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') = ", "F." . $accno);
                         }
                     }
                     if ($result->num_rows === 0) {
-                        
+
                         $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') like ", "$accno-%");
                     }
                     if ($result->num_rows === 0) {
-                       
+
                         $result = mySQLqueryex($musdef[0], "REPLACE(REPLACE(inv, ' ', ''),'.','') like ", str_replace('.', '', $accno));
                     }
                     if ($result->num_rows === 0) {
                         if (stripos($accno, 'bis') !== false) {
-                                                        $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') like ", str_replace('bis', '%bis%', $accno));
+                            $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') like ", str_replace('bis', '%bis%', $accno));
                         }
                     }
                     // This is Egyptology-specific. (Leemans Numbers refer to a catalogue of the Egyptian collection).
                     if ($result->num_rows === 0) {
-                                                $result = mySQLqueryex('Leiden (Leemans)', "REPLACE(inv, ' ', '.') = ", $accno);
+                        $result = mySQLqueryex('Leiden (Leemans)', "REPLACE(inv, ' ', '.') = ", $accno);
                     }
                     if ($result->num_rows === 0) {
                         $url = "http://" . $musdef[6] . $accno;
@@ -452,11 +450,11 @@ if ($helpmode == "aliases") {
                     $url = "http://" . $musdef[1] . $webid["webid"] . $musdef[2];
                     RedirUrl($url);
                 } elseif ($musdef[0] == 'Jerusalem') {
-                    /*                     * *****************************************************************JERUSALEM****************************************************************** */
+                    /*                     * ***********************JERUSALEM */
                     /* $accno = str_replace(' ', '.', $accno); */
                     $accno = str_replace('..', '.', $accno);
                     $accno = str_replace('  ', ' ', $accno);
-                                        $result = mySQLqueryex($musdef[0], "inv = ", $accno);
+                    $result = mySQLqueryex($musdef[0], "inv = ", $accno);
                     if ($result->num_rows === 0) {
                         $result = mySQLqueryex($musdef[0], "inv like ", "%$accno%");
                     }
@@ -467,7 +465,7 @@ if ($helpmode == "aliases") {
                     }
                     ReturnResults($result, $musdef[1], $musdef[2], $mus);
                 } elseif ($musdef[0] == 'Edinburgh') {
-                    /*                     * *****************************************************************Edinburgh****************************************************************** */
+                    /*                     * ***********************Edinburgh */
                     $accno = str_replace(' ', '.', $accno);
                     $accno = str_replace('  ', ' ', $accno);
                     if (is_numeric(substr($accno, 0, 1))) {
@@ -476,42 +474,29 @@ if ($helpmode == "aliases") {
                     $url1 = "http://www.nms.ac.uk/explore/collection-search-results/?mode=standard&amp;key=object_number&amp;term=$accno";
                     $url2 = "http://nms.scran.ac.uk/database/results.php?query1=%22$accno%22&amp;bool1=AND&amp;query2=&amp;bool2=AND&amp;query3=&amp;FULL=1&amp;_IXSPFX_=z&amp;sortby=title&amp;sortorder=ASC&amp;mediatype=";
                     DualPage($url1, $url2);
-
-                    /* } elseif ($musdef[0] == 'Allard Pierson') { 
-                      //                     * *****************************************************************Allard Pierson******************************************************************
-
-                      if (is_numeric($accno)) {
-                      $accno = sprintf("%05d", $accno);
-                      }
-
-                      $url2 = "http://opc.uva.nl/F/?func=find-c&ccl_term=(SHL%3D%22apm$accno%3F%22";
-                      $url1 = "https://www.uvaerfgoed.nl/beeldbank/en/allardpiersonmuseum/xsearch?metadata=apm$accno";
-                      DualPage1($url1, $url2);
-                     */
                 } elseif ($musdef[0] == 'Louvre') {
-                    /*                     * *****************************************************************LOUVRE****************************************************************** */
+                    /*                     * ***********************LOUVRE */
                     $accno = str_replace('.', ' ', $accno);
                     $accno = str_replace('  ', ' ', $accno);
                     if (preg_match("/^\D\d.*/", $accno)) {
                         $accno = substr($accno, 0, 1) . " " . substr($accno, 1);
                     }
-                                        $result = mySQLqueryex($musdef[0], "REPLACE(inv, '.', ' ') = ", $accno);
+                    $result = mySQLqueryex($musdef[0], "REPLACE(inv, '.', ' ') = ", $accno);
 
                     if (($result->num_rows === 0) and ( is_numeric($accno))) {
-                                                $result = mySQLqueryex($musdef[0], "STRIP_NON_DIGIT(inv) =", $accno);
+                        $result = mySQLqueryex($musdef[0], "STRIP_NON_DIGIT(inv) =", $accno);
                     }
                     if ($result->num_rows === 0) {
-                                               $result = mySQLqueryex($musdef[0], "REPLACE(inv, '.', ' ') like ", $accno . " %");
+                        $result = mySQLqueryex($musdef[0], "REPLACE(inv, '.', ' ') like ", $accno . " %");
                     }
                     if ($result->num_rows === 0) {
                         $url = 'http://' . $musdef[6] . '%22' . $accno . '%22';
                         RedirUrl($url);
-                        //echo $sql;
                         exit();
                     }
                     ReturnResults($result, $musdef[1], $musdef[2], $mus);
                 } elseif ($musdef[0] == 'Bruxelles') {
-                    /*                     * *****************************************************************BRUXELLES****************************************************************** */
+                    /*                     * ***********************BRUXELLES */
                     $pos = firstnum($accno);
                     if ($pos === false) {
                         $url = "http://" . $musdef[6] . $accno;
@@ -527,17 +512,17 @@ if ($helpmode == "aliases") {
                         $nonnum = substr($accno, $endpos);
                     }
                     $numstr = "E." . sprintf("%05d", $num); // This is Egyptology-specific. ("E" is for Egyptian collection in Bruxelles).
-                    
-                    $result = mySQLqueryex($musdef[0], "inv =", $numstr.$nonnum);
+
+                    $result = mySQLqueryex($musdef[0], "inv =", $numstr . $nonnum);
                     if ($result->num_rows === 0) {
-                        $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr.$nonnum."%");
+                        $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr . $nonnum . "%");
                     }
                     if ($result->num_rows === 0) {
                         $nonnumrep = str_replace('.', '%', str_replace(' ', '%', $nonnum));
-                        $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr.$nonnumrep."%");
+                        $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr . $nonnumrep . "%");
                     }
                     if ($result->num_rows === 0) {
-                        $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr."%");
+                        $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr . "%");
                     }
                     if ($result->num_rows === 0) {
                         $url = "http://" . $musdef[6];
@@ -546,7 +531,7 @@ if ($helpmode == "aliases") {
                     }
                     ReturnResults($result, $musdef[1], $musdef[2], $mus);
                 } elseif ($musdef[0] == 'Torino') {
-                    // *******************************************************************************TORINO **************************************************************************// 
+                    /*                     * ***********************TORINO */
                     $numaccno = preg_replace("/[^0-9]/", "", $accno);
 
                     if (stripos($accno, 'S') !== false) {
@@ -561,12 +546,12 @@ if ($helpmode == "aliases") {
                     if (stripos($accno, 'C') !== false) {
                         $accno = "Cat. " . sprintf("%04d", $numaccno);
                     }
-                    
+
                     $result = mySQLqueryex($musdef[0], 'inv =', $accno);
                     if ($result->num_rows === 0) {
 
                         if (!$numaccno == 0) {
-$result = mySQLqueryex($musdef[0], 'STRIP_NON_DIGIT(inv) =', $numaccno);
+                            $result = mySQLqueryex($musdef[0], 'STRIP_NON_DIGIT(inv) =', $numaccno);
                         }
                         if ($result->num_rows === 0) {
                             $url = "http://" . $musdef[6];
@@ -581,7 +566,7 @@ $result = mySQLqueryex($musdef[0], 'STRIP_NON_DIGIT(inv) =', $numaccno);
                     exit();
                 }
             } else {
-                /*                 * ************************       OTHER MUSEUMS                          */
+                /*                 * ***********************OTHER MUSEUMS */
                 switch ($musdef[0]) {
                     case 'Genève':
                         if (is_numeric($accno)) {

@@ -633,6 +633,7 @@ if ($helpmode == "aliases") {
                             $accno = sprintf("%05d", $accno);
                         }
                         break;
+                    case 'Walters':                    
                     case 'Boston':
                     case 'Brooklyn':
                         $accno = preg_replace('/(\d)\s+(?=\d)/', '$1.', $accno);

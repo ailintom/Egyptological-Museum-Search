@@ -553,7 +553,7 @@ if ($helpmode == "aliases") {
                         //  $pref = substr($accno, 0, $pos);
                         $endpos = firstnonnum($numaccno);
                         if (!($endpos === false)) {
-                            $nonnum = substr($numaccno, $endpos);
+                            $nonnum = str_replace(' ', '', substr($numaccno, $endpos));
                             $numaccno = substr($numaccno, 0, $endpos);
                         }
                     }
@@ -574,7 +574,7 @@ if ($helpmode == "aliases") {
                     $result = mySQLqueryex($musdef[0], 'inv =', $accno);
                     if ($result->num_rows === 0 and preg_match("/.*\/.*/", $accno)) {
                         if (preg_match("/^\d.*/", $accno)) {
-                            $result = mySQLqueryex($musdef[0], 'inv like ', '%' . str_replace("/", "/%", $accno));
+                            $result = mySQLqueryex($musdef[0], 'inv like ', '%' . str_replace("/", "/%", $numaccno . $nonnum));
                         } else {
                             $result = mySQLqueryex($musdef[0], 'inv like ', str_replace("/", "/%", $accno));
                         }

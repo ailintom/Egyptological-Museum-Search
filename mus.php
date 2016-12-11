@@ -374,6 +374,7 @@ if ($helpmode == "aliases") {
             if ($musdef[5] == true) {
                 if ($musdef[0] == 'OIM') {
                     /*                     * *********************** OIM  */
+                    $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
                     $pos = firstnum($accno);
                     if (!($pos === false)) { // the procedure replaces the searched OIM number into "E " + the numerical part. This is Egyptology-specific. ("E" is for Egyptian collection in OIM).
                         $accno = "E " . substr($accno, $pos);
@@ -396,6 +397,7 @@ if ($helpmode == "aliases") {
                     }
                 } elseif ($musdef[0] == 'BM') {
                     /*                     * ***********************BM */
+                    $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
 // In the following line the script loads JSON with search results for "EA" + the digits contained in the searched acc. no. This is Egyptology-specific. ("EA is for Egyptian collection in BM).
                     $url = "http://collection.britishmuseum.org/sparql.json?query=SELECT+%3Fwebidval%0D%0A%7B+%3Fbigno+rdfs%3Alabel+%22EA" . preg_replace("/[^0-9]/", "", $accno) . "%22+.%0D%0A+%3Fobj+ecrm%3AP1_is_identified_by+%3Fbigno+.%0D%0A+%3Fobj+ecrm%3AP1_is_identified_by+%3Fwebid+.+%0D%0A+%3Fwebid++ecrm%3AP2_has_type+%3Chttp%3A%2F%2Fcollection.britishmuseum.org%2Fid%2Fthesauri%2Fidentifier%2Fcodexid%3E+.%0D%0A+%3Fwebid+rdfs%3Alabel+%3Fwebidval+%0D%0A+%7D%0D%0A&_implicit=false&implicit=true&_equivalent=false&_form=%2Fsparql";
                     $BMjson = json_decode(downloadmusjson($url), true);
@@ -508,6 +510,7 @@ if ($helpmode == "aliases") {
                     ReturnResults($result, $musdef[1], $musdef[2], $mus);
                 } elseif ($musdef[0] == 'Bruxelles') {
                     /*                     * ***********************BRUXELLES */
+                    $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
                     $pos = firstnum($accno);
                     if ($pos === false) {
                         $url = "http://" . $musdef[6] . $accno;

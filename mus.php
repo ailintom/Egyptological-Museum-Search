@@ -543,8 +543,7 @@ if ($helpmode == "aliases") {
                     ReturnResults($result, $musdef[1], $musdef[2], $mus);
                 } elseif ($musdef[0] == 'Torino') {
                     /*                     * ***********************TORINO */
-                    // $numaccno = preg_replace("/[^0-9]/", "", $accno);
-
+                    $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
                     $pos = firstnum($accno);
                     if (!($pos === false)) {
                         $numaccno = substr($accno, $pos);
@@ -633,7 +632,7 @@ if ($helpmode == "aliases") {
                             $accno = sprintf("%05d", $accno);
                         }
                         break;
-                    case 'Walters':                    
+                    case 'Walters':
                     case 'Boston':
                     case 'Brooklyn':
                         $accno = preg_replace('/(\d)\s+(?=\d)/', '$1.', $accno);

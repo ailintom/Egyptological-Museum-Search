@@ -1,9 +1,9 @@
 <?php
 /**
- * Egyptological Museum Search ver. 0.7.1
+ * Egyptological Museum Search ver. 0.7.2
  * Author: Alexander Ilin-Tomich
  * Created at Johannes Gutenberg University, Mainz
- * Date: 08.12.2016
+ * Date: 20.12.2016
  * Licensed under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) license
  * https://creativecommons.org/licenses/by-sa/4.0/
  * Includes code snippets originally posted under CC BY-SA 3.0 (attributed to the respective authors in the comments below)
@@ -24,6 +24,8 @@
  * * Improved code structure. Minor bug fixes.
  *  Version 0.7.1: 08.12.2016
  * * Sanitizing input for SQL Queries. Minor improvements for Brooklyn and Boston. First GitHub release
+ *  Version 0.7.2: 20.12.2016
+ * * Numerous improvements in accession number processing
  * 
  * 
  * This php script should be used as follows:
@@ -337,7 +339,8 @@ if ($helpmode == "aliases") {
     if ($mus === 'MMA') {
         //This part of the code fetches the JSON file with search results from MMA and redirects the user to the results
         // If the JSON contains no results the basic MMA search procedure will be performed later
-        $accno = preg_replace('/(?<=\d)\s+(?=\D)/', '', $accno);
+        $accno = preg_replace('/(\d)\s+(?=\d)/', '$1.', $accno); //replace spaces between digits with spaces
+        $accno = preg_replace('/(?<=\d)\s+(?=\D)/', '', $accno); //remove spaces between the number and the extension
         if (preg_match("/^\d\.\d.*/", $accno)) {
             $accno = "0" . $accno;
         }

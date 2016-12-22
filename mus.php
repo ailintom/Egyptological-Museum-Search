@@ -321,7 +321,13 @@ if ($helpmode == "aliases") {
     $mus = filter_input(INPUT_GET, 'museum', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW); // Gets the parameters of the GET query containing the museum name and the searched inventory number
     $accno = trim(filter_input(INPUT_GET, 'no', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW));
     $accno = trim(str_replace("&#34;", '', str_replace('"', '', $accno))); // removes quotation signs
-    $accno = trim(str_replace($mus, '', $accno)); // removes the name of the museum from the searched string in case the user has entered it twice
+    if (strcasecmp (substr($accno, 0, 4), 'inv.') == 0 or strcasecmp (substr($accno, 0, 4), 'inv ') == 0 ) { // removes the word inv. from the beginning of the searched string
+    $accno = trim(substr($accno, 4));
+} 
+    if (strcasecmp (substr($accno, 0, 3), 'no.') == 0 or strcasecmp (substr($accno, 0, 3), 'no ') == 0 ) { // removes the word no. from the beginning of the searched string
+    $accno = trim(substr($accno, 3));
+} 
+    $accno = trim(str_ireplace($mus, '', $accno)); // removes the name of the museum from the searched string in case the user has entered it twice
     foreach ($musaliases as &$musalias) { // matches the alias from the musaliases.json
         if ($musalias[2] === true) { /* $musalias[2] === true exact match required; $musalias[2] === false museum name should be contained */
             $match = strcasecmp($mus, $musalias[0]) == 0;
@@ -333,13 +339,13 @@ if ($helpmode == "aliases") {
             break;
         }
     }
-    $accno = trim(str_replace($mus, '', $accno)); // removes the name of the museum from the searched string in case the user has entered it twice
+    $accno = trim(str_ireplace($mus, '', $accno)); // removes the name of the museum from the searched string in case the user has entered it twice
     /*     * *********************** MMA  */
 // MMA is processed here separately for in case of no match from JSON query, the standard MMA search page will be returned by the usual procedure
     if ($mus === 'MMA') {
         //This part of the code fetches the JSON file with search results from MMA and redirects the user to the results
         // If the JSON contains no results the basic MMA search procedure will be performed later
-        $accno = preg_replace('/(\d)\s+(?=\d)/', '$1.', $accno); //replace spaces between digits with spaces
+        $accno = preg_replace('/(\d)[-\s\/]+(?=\d)/', '$1.', $accno); //replace spaces and slashes between digits with spaces
         $accno = preg_replace('/(?<=\d)\s+(?=\D)/', '', $accno); //remove spaces between the number and the extension
         if (preg_match("/^\d\.\d.*/", $accno)) {
             $accno = "0" . $accno;
@@ -413,7 +419,7 @@ if ($helpmode == "aliases") {
                     RedirUrl($url);
                 } elseif ($musdef[0] == 'Leiden') {
                     /*                     * *********************** LEIDEN */
-                    $accno = str_replace('Æ', 'AE', $accno);
+                    $accno = str_ireplace('Æ', 'AE', $accno);
                     if (preg_match("/^[^0-9 .][^0-9 .][^0-9 .]\d.*/", $accno)) {
                         $accno = substr($accno, 0, 2) . " " . substr($accno, 2);
                     }
@@ -442,7 +448,7 @@ if ($helpmode == "aliases") {
                     }
                     if ($result->num_rows === 0) {
                         if (stripos($accno, 'bis') !== false) {
-                            $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') like ", str_replace('bis', '%bis%', $accno));
+                            $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') like ", str_ireplace('bis', '%bis%', $accno));
                         }
                     }
                     // This is Egyptology-specific. (Leemans Numbers refer to a catalogue of the Egyptian collection).
@@ -640,7 +646,7 @@ if ($helpmode == "aliases") {
                     case 'Walters':
                     case 'Boston':
                     case 'Brooklyn':
-                        $accno = preg_replace('/(\d)\s+(?=\d)/', '$1.', $accno);
+                        $accno = preg_replace('/(\d)[-\s\/]+(?=\d)/', '$1.', $accno); // remove spaces and slashes between numbers
                         if (preg_match("/^\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d$/", $accno) or preg_match("/^\d\d\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d\d\d$/", $accno) or preg_match("/^\d\d\d\d[^0-9.].*/", $accno) or preg_match("/^\d\d\d\d$/", $accno)) {
                             $accno = substr($accno, 0, 2) . "." . substr($accno, 2);
                         } elseif (preg_match("/^\d\d\d\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d\d\d\d$/", $accno) or preg_match("/^\d\d\d\d\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d\d\d\d\d$/", $accno)) {

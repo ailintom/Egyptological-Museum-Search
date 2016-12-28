@@ -33,4 +33,4 @@ A PHP tool to search the objects by inventory numbers in various online museum c
   The configuration files are json arrays musaliases.json, musconfig.json, museumdefinitions.json.
   Their structure is defined in the comments in mus.php. 
   
-  The tool was designed with Egyptological collections in mind. If you with to adapt it to work with other collections, please mind the "Egyptology-specific" comments in the source code.
+  The tool was designed with Egyptological collections in mind. If you wish to adapt it to work with other collections, please mind the "Egyptology-specific" comments in the source code.

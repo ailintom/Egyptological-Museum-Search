@@ -665,6 +665,11 @@ if ($helpmode == "aliases") {
                             $accno = str_replace('.', '', str_replace(' ', '', $accno));
                         }
                         break;
+                        
+                    case 'Field Museum' :                        
+                        $pos = firstnum($accno);
+                        $accno = substr($accno, $pos);
+                        break;
                     case 'Stockholm' :
                         if (substr($accno, 0, 3) == "NME") {
                             $pos = firstnum($accno);

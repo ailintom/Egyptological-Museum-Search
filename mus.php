@@ -385,8 +385,8 @@ if ($helpmode == "aliases") {
                     /*                     * *********************** OIM  */
                     $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
                     $pos = firstnum($accno);
-                    if (!($pos === false)) { // the procedure replaces the searched OIM number into "E " + the numerical part. This is Egyptology-specific. ("E" is for Egyptian collection in OIM).
-                        $accno = "E " . substr($accno, $pos);
+                    if (!($pos === false)) { // the procedure replaces the searched OIM number into "E" + the numerical part. This is Egyptology-specific. ("E" is for Egyptian collection in OIM).
+                        $accno = "E" . substr($accno, $pos);
                     }
                     $url = "https://oisolr.uchicago.edu/solr/oidbcatalogue/search-museum-collection/?&q=SrchRegisNumber:(" . str_replace(" ", "%20", $accno) . ")&facet=true&facet.mincount=1&fq=&facet.sort=count&sort=score%20desc&rows=50&start=0&wt=json";
                     $OIMraw = trim(downloadmusjson($url));

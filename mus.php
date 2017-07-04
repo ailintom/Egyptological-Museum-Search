@@ -381,9 +381,9 @@ if ($helpmode == "aliases") {
         if ($match == true) {
             $found = true;
             if ($musdef[5] == true) {
-                if ($musdef[0] == 'OIM') {
+               /** if ($musdef[0] == 'OIM') { */
                     /*                     * *********************** OIM  */
-                    $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
+                 /**   $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
                     $pos = firstnum($accno);
                     if (!($pos === false)) { // the procedure replaces the searched OIM number into "E" + the numerical part. This is Egyptology-specific. ("E" is for Egyptian collection in OIM).
                         $accno = "E" . substr($accno, $pos);
@@ -404,7 +404,7 @@ if ($helpmode == "aliases") {
                     if (count($mmaids) > 0) {
                         ReturnResultsFromArray($mmaids, $musdef[1], $musdef[2], $mus);
                     }
-                } elseif ($musdef[0] == 'BM') {
+                } else */ if ($musdef[0] == 'BM') {
                     /*                     * ***********************BM */
                     // In the following line the script loads JSON with search results for "EA" + the digits contained in the searched acc. no. This is Egyptology-specific. ("EA is for Egyptian collection in BM).
                     $url = "http://collection.britishmuseum.org/sparql.json?query=PREFIX+ecrm%3A+%3Chttp%3A%2F%2Ferlangen-crm.org%2Fcurrent%2F%3E%0D%0ASELECT+%3Fwebidval%0D%0A%7B+%3Fbigno+rdfs%3Alabel+%22EA" . preg_replace("/[^0-9]/", "", $accno) . "%22+.%0D%0A+%3Fobj+ecrm%3AP1_is_identified_by+%3Fbigno+.%0D%0A+%3Fobj+ecrm%3AP1_is_identified_by+%3Fwebid+.+%0D%0A+%3Fwebid++ecrm%3AP2_has_type+%3Chttp%3A%2F%2Fcollection.britishmuseum.org%2Fid%2Fthesauri%2Fidentifier%2Fcodexid%3E+.%0D%0A+%3Fwebid+rdfs%3Alabel+%3Fwebidval%0D%0A+%7D&_implicit=false&implicit=true&_equivalent=false&_form=%2Fsparql";
@@ -698,6 +698,20 @@ if ($helpmode == "aliases") {
                     case 'Wien': //remove all but the digits
                         $accno = preg_replace('~[^0-9]~', '', $accno);
                         break;
+                    case 'OIM':
+                        if (preg_match("/e/i",substr($accno, 0, 1))){
+                                                       $pos = firstnum($accno);
+                            if (!($pos === false)) {
+                                $accno = "E".substr($accno, $pos);
+                            }
+                        
+                        }elseif(preg_match("/\D/i",substr($accno, 0, 1))) {
+                                $accno = preg_replace('~[^\w]~', '', $accno);
+                            }else{
+                                $accno = "E".$accno;
+                            }
+                          
+                        break;                        
                     case 'Ny Carlsberg':
                         $accno = preg_replace('~[^0-9]~', '', $accno);
                         if (is_numeric($accno)) {

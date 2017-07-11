@@ -660,7 +660,7 @@ if ($helpmode == "aliases") {
                     case 'Philadelphia':
                         $accno = preg_replace('~[ .]~', '', $accno);
                         break;
-                    case 'Liverpool WM' :
+                    case 'Liverpool WM':
                         if (substr($accno, 0, 1) == "M") {
                             $accno = str_replace('.', '', str_replace(' ', '', $accno));
                         }
@@ -721,6 +721,9 @@ if ($helpmode == "aliases") {
                     case 'Durham':
                     case 'Swansea':
                         $accno = preg_replace('~[ .]~', '', $accno);
+                        break;
+                    case 'Washington':
+                        $accno = str_replace(' ', '.', $accno);
                         break;
                 }
                 $url = "http://" . $musdef[1] . $accno . $musdef[2]; // This line forms the URL for all the museums supporting GET queries

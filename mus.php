@@ -27,7 +27,7 @@
  *  Version 0.7.2: 20.12.2016
  * * Numerous improvements in accession number processing
  *  Version 0.7.3: 21.08.2017
- * * Updated to work with the new BM SPARQL interface
+ * * Updated to work with the new BM SPARQL interface and the Fitzwilliam API
  * 
  * 
  * This php script should be used as follows:
@@ -121,11 +121,11 @@ function downloadmusjsonpost($url, $data) {
     curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
     //Set headers
     $headers = array();
-$headers[] = 'Accept: application/sparql-results+json';
-$headers[] = 'Content-Type: application/sparql-query; charset=utf-8';
-curl_setopt($curl_handle, CURLOPT_HTTPHEADER, $headers);
-curl_setopt($curl_handle, CURLOPT_POST, 1 );
-curl_setopt($curl_handle, CURLOPT_POSTFIELDS,     $data ); 
+    $headers[] = 'Accept: application/sparql-results+json';
+    $headers[] = 'Content-Type: application/sparql-query; charset=utf-8';
+    curl_setopt($curl_handle, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl_handle, CURLOPT_POST, 1);
+    curl_setopt($curl_handle, CURLOPT_POSTFIELDS, $data);
 // Set the url
     curl_setopt($curl_handle, CURLOPT_URL, $url);
 // Set the user-agent 
@@ -135,7 +135,7 @@ curl_setopt($curl_handle, CURLOPT_POSTFIELDS,     $data );
     $res = curl_exec($curl_handle);
 // Closing
     curl_close($curl_handle);
-    
+
     return $res;
 }
 
@@ -351,12 +351,12 @@ if ($helpmode == "aliases") {
     $mus = filter_input(INPUT_GET, 'museum', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW); // Gets the parameters of the GET query containing the museum name and the searched inventory number
     $accno = trim(filter_input(INPUT_GET, 'no', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW));
     $accno = trim(str_replace("&#34;", '', str_replace('"', '', $accno))); // removes quotation signs
-    if (strcasecmp (substr($accno, 0, 4), 'inv.') == 0 or strcasecmp (substr($accno, 0, 4), 'inv ') == 0 ) { // removes the word inv. from the beginning of the searched string
-    $accno = trim(substr($accno, 4));
-} 
-    if (strcasecmp (substr($accno, 0, 3), 'no.') == 0 or strcasecmp (substr($accno, 0, 3), 'no ') == 0 ) { // removes the word no. from the beginning of the searched string
-    $accno = trim(substr($accno, 3));
-} 
+    if (strcasecmp(substr($accno, 0, 4), 'inv.') == 0 or strcasecmp(substr($accno, 0, 4), 'inv ') == 0) { // removes the word inv. from the beginning of the searched string
+        $accno = trim(substr($accno, 4));
+    }
+    if (strcasecmp(substr($accno, 0, 3), 'no.') == 0 or strcasecmp(substr($accno, 0, 3), 'no ') == 0) { // removes the word no. from the beginning of the searched string
+        $accno = trim(substr($accno, 3));
+    }
     $accno = trim(str_ireplace($mus, '', $accno)); // removes the name of the museum from the searched string in case the user has entered it twice
     foreach ($musaliases as &$musalias) { // matches the alias from the musaliases.json
         if ($musalias[2] === true) { /* $musalias[2] === true exact match required; $musalias[2] === false museum name should be contained */
@@ -400,6 +400,27 @@ if ($helpmode == "aliases") {
         if (count($mmaids) > 0) {
             ReturnResultsFromArray($mmaids, "metmuseum.org", "", $mus);
         }
+    } elseif ($mus === 'Fitzwilliam') {
+        $accno = str_replace(" ", ".", $accno);
+        $url = "http://data.fitzmuseum.cam.ac.uk/api/?query=ObjectNumber:" . $accno;
+        $Fitzjson = json_decode(downloadmusjson($url), true);
+        if ($Fitzjson["total"] > 0) {
+            $webid = $Fitzjson["results"];
+            foreach ($webid as &$searchres) {
+                if (($searchres['ObjectNumber'] == $accno) or preg_match("/" . preg_quote($accno) . "\D.*/", $searchres['ObjectNumber'])) {
+
+                    $mmaids[] = array($searchres['priref'], $searchres['ObjectNumber']);
+                }
+            }
+            if (count($mmaids) == 0) {
+                foreach ($webid as &$searchres) {
+                    $mmaids[] = array($searchres['priref'], $searchres['ObjectNumber']);
+                }
+            }
+            if (count($mmaids) > 0) {
+                ReturnResultsFromArray($mmaids, "data.fitzmuseum.cam.ac.uk/id/object/", "", $mus);
+            }
+        }
     }
 //The procedure looks for the matching museum definition in $musarray
     foreach ($musarray as &$musdef) {
@@ -411,36 +432,36 @@ if ($helpmode == "aliases") {
         if ($match == true) {
             $found = true;
             if ($musdef[5] == true) {
-               /** if ($musdef[0] == 'OIM') { */
-                    /*                     * *********************** OIM  */
-                 /**   $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
-                    $pos = firstnum($accno);
-                    if (!($pos === false)) { // the procedure replaces the searched OIM number into "E" + the numerical part. This is Egyptology-specific. ("E" is for Egyptian collection in OIM).
-                        $accno = "E" . substr($accno, $pos);
-                    }
-                    $url = "https://oisolr.uchicago.edu/solr/oidbcatalogue/search-museum-collection/?&q=SrchRegisNumber:(" . str_replace(" ", "%20", $accno) . ")&facet=true&facet.mincount=1&fq=&facet.sort=count&sort=score%20desc&rows=50&start=0&wt=json";
-                    $OIMraw = trim(downloadmusjson($url));
-                    if ((strpos($OIMraw, 'docs') === false) or ( strpos($OIMraw, '"numFound":0') !== false)) { // Nothing found or false result
-                        $url = "http://" . $musdef[6];
-                        RedirUrl($url);
-                        exit();
-                    }
-                    $OIMjson = json_decode(substr($OIMraw, 4, -1), true);
-                    $webid = $OIMjson["response"]["docs"];
-                    $mmaids = array();
-                    foreach ($webid as &$searchres) {
-                        $mmaids[] = array($searchres['irn'], $searchres['RegistrationNumber'][0]);
-                    }
-                    if (count($mmaids) > 0) {
-                        ReturnResultsFromArray($mmaids, $musdef[1], $musdef[2], $mus);
-                    }
-                } else */ if ($musdef[0] == 'BM') {
+                /** if ($musdef[0] == 'OIM') { */
+                /*                 * *********************** OIM  */
+                /**   $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
+                  $pos = firstnum($accno);
+                  if (!($pos === false)) { // the procedure replaces the searched OIM number into "E" + the numerical part. This is Egyptology-specific. ("E" is for Egyptian collection in OIM).
+                  $accno = "E" . substr($accno, $pos);
+                  }
+                  $url = "https://oisolr.uchicago.edu/solr/oidbcatalogue/search-museum-collection/?&q=SrchRegisNumber:(" . str_replace(" ", "%20", $accno) . ")&facet=true&facet.mincount=1&fq=&facet.sort=count&sort=score%20desc&rows=50&start=0&wt=json";
+                  $OIMraw = trim(downloadmusjson($url));
+                  if ((strpos($OIMraw, 'docs') === false) or ( strpos($OIMraw, '"numFound":0') !== false)) { // Nothing found or false result
+                  $url = "http://" . $musdef[6];
+                  RedirUrl($url);
+                  exit();
+                  }
+                  $OIMjson = json_decode(substr($OIMraw, 4, -1), true);
+                  $webid = $OIMjson["response"]["docs"];
+                  $mmaids = array();
+                  foreach ($webid as &$searchres) {
+                  $mmaids[] = array($searchres['irn'], $searchres['RegistrationNumber'][0]);
+                  }
+                  if (count($mmaids) > 0) {
+                  ReturnResultsFromArray($mmaids, $musdef[1], $musdef[2], $mus);
+                  }
+                  } else */ if ($musdef[0] == 'BM') {
                     /*                     * ***********************BM */
                     // In the following line the script loads JSON with search results for "EA" + the digits contained in the searched acc. no. This is Egyptology-specific. ("EA is for Egyptian collection in BM).
-                   
+
                     $bmdata = "PREFIX owl: <http://www.w3.org/2002/07/owl#> SELECT ?webidval WHERE { ?auth owl:sameAs <http://collection.britishmuseum.org/id/object/Y_EA" . preg_replace("/[^0-9]/", "", $accno) . "> .   ?auth owl:sameAs ?webidval .   FILTER (?webidval != <http://collection.britishmuseum.org/id/object/Y_EA" . preg_replace("/[^0-9]/", "", $accno) . ">) }";
                     $BMjson = json_decode(downloadmusjsonpost("https://collection.britishmuseum.org/sparql", $bmdata), true);
-                    
+
                     $webid = substr($BMjson["results"]["bindings"][0]["webidval"]["value"], 46);
                     if ($webid == null) {
                         $url = "http://" . $musdef[6] . preg_replace("/[^0-9]/", "", $accno);
@@ -697,8 +718,8 @@ if ($helpmode == "aliases") {
                             $accno = str_replace('.', '', str_replace(' ', '', $accno));
                         }
                         break;
-                        
-                    case 'Field Museum' :                        
+
+                    case 'Field Museum' :
                         $pos = firstnum($accno);
                         $accno = substr($accno, $pos);
                         break;
@@ -731,19 +752,18 @@ if ($helpmode == "aliases") {
                         $accno = preg_replace('~[^0-9]~', '', $accno);
                         break;
                     case 'OIM':
-                        if (preg_match("/e/i",substr($accno, 0, 1))){
-                                                       $pos = firstnum($accno);
+                        if (preg_match("/e/i", substr($accno, 0, 1))) {
+                            $pos = firstnum($accno);
                             if (!($pos === false)) {
-                                $accno = "E".substr($accno, $pos);
+                                $accno = "E" . substr($accno, $pos);
                             }
-                        
-                        }elseif(preg_match("/\D/i",substr($accno, 0, 1))) {
-                                $accno = preg_replace('~[^\w]~', '', $accno);
-                            }else{
-                                $accno = "E".$accno;
-                            }
-                          
-                        break;                        
+                        } elseif (preg_match("/\D/i", substr($accno, 0, 1))) {
+                            $accno = preg_replace('~[^\w]~', '', $accno);
+                        } else {
+                            $accno = "E" . $accno;
+                        }
+
+                        break;
                     case 'Ny Carlsberg':
                         $accno = preg_replace('~[^0-9]~', '', $accno);
                         if (is_numeric($accno)) {

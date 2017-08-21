@@ -26,6 +26,8 @@
  * * Sanitizing input for SQL Queries. Minor improvements for Brooklyn and Boston. First GitHub release
  *  Version 0.7.2: 20.12.2016
  * * Numerous improvements in accession number processing
+ *  Version 0.7.3: 21.08.2017
+ * * Updated to work with the new BM SPARQL interface
  * 
  * 
  * This php script should be used as follows:
@@ -106,6 +108,34 @@ function downloadmusjson($url) {
     $res = curl_exec($curl_handle);
 // Closing
     curl_close($curl_handle);
+    return $res;
+}
+
+/** Returns the text file downloaded from $url with curl */
+function downloadmusjsonpost($url, $data) {
+//  Initiate curl
+    $curl_handle = curl_init();
+// Disable SSL verification
+    curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, false);
+// 
+    curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
+    //Set headers
+    $headers = array();
+$headers[] = 'Accept: application/sparql-results+json';
+$headers[] = 'Content-Type: application/sparql-query; charset=utf-8';
+curl_setopt($curl_handle, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($curl_handle, CURLOPT_POST, 1 );
+curl_setopt($curl_handle, CURLOPT_POSTFIELDS,     $data ); 
+// Set the url
+    curl_setopt($curl_handle, CURLOPT_URL, $url);
+// Set the user-agent 
+    $musconfig = json_decode(file_get_contents("musconfig.json"), true);
+    curl_setopt($curl_handle, CURLOPT_USERAGENT, $musconfig[4]);
+// Execute
+    $res = curl_exec($curl_handle);
+// Closing
+    curl_close($curl_handle);
+    
     return $res;
 }
 
@@ -407,9 +437,11 @@ if ($helpmode == "aliases") {
                 } else */ if ($musdef[0] == 'BM') {
                     /*                     * ***********************BM */
                     // In the following line the script loads JSON with search results for "EA" + the digits contained in the searched acc. no. This is Egyptology-specific. ("EA is for Egyptian collection in BM).
-                    $url = "http://collection.britishmuseum.org/sparql.json?query=PREFIX+ecrm%3A+%3Chttp%3A%2F%2Ferlangen-crm.org%2Fcurrent%2F%3E%0D%0ASELECT+%3Fwebidval%0D%0A%7B+%3Fbigno+rdfs%3Alabel+%22EA" . preg_replace("/[^0-9]/", "", $accno) . "%22+.%0D%0A+%3Fobj+ecrm%3AP1_is_identified_by+%3Fbigno+.%0D%0A+%3Fobj+ecrm%3AP1_is_identified_by+%3Fwebid+.+%0D%0A+%3Fwebid++ecrm%3AP2_has_type+%3Chttp%3A%2F%2Fcollection.britishmuseum.org%2Fid%2Fthesauri%2Fidentifier%2Fcodexid%3E+.%0D%0A+%3Fwebid+rdfs%3Alabel+%3Fwebidval%0D%0A+%7D&_implicit=false&implicit=true&_equivalent=false&_form=%2Fsparql";
-                    $BMjson = json_decode(downloadmusjson($url), true);
-                    $webid = $BMjson["results"]["bindings"][0]["webidval"]["value"];
+                   
+                    $bmdata = "PREFIX owl: <http://www.w3.org/2002/07/owl#> SELECT ?webidval WHERE { ?auth owl:sameAs <http://collection.britishmuseum.org/id/object/Y_EA" . preg_replace("/[^0-9]/", "", $accno) . "> .   ?auth owl:sameAs ?webidval .   FILTER (?webidval != <http://collection.britishmuseum.org/id/object/Y_EA" . preg_replace("/[^0-9]/", "", $accno) . ">) }";
+                    $BMjson = json_decode(downloadmusjsonpost("https://collection.britishmuseum.org/sparql", $bmdata), true);
+                    
+                    $webid = substr($BMjson["results"]["bindings"][0]["webidval"]["value"], 46);
                     if ($webid == null) {
                         $url = "http://" . $musdef[6] . preg_replace("/[^0-9]/", "", $accno);
                         RedirUrl($url);

@@ -775,7 +775,7 @@ if ($helpmode == "aliases") {
                         $accno = preg_replace('~[ .]~', '', $accno);
                         break;
                     case 'Washington':
-                        $accno = str_replace(' ', '.', $accno);
+                        $accno = str_replace(' ', '', $accno);
                         break;
                 }
                 $url = "http://" . $musdef[1] . $accno . $musdef[2]; // This line forms the URL for all the museums supporting GET queries

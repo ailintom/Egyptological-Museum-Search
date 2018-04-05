@@ -380,7 +380,7 @@ if ($helpmode == "aliases") {
         if (preg_match("/^\d\.\d.*/", $accno)) {
             $accno = "0" . $accno;
         }
-        $url = "http://metmuseum.org/api/collection/collectionlisting?artist=&department=10&era=&geolocation=&material=&offset=0&pageSize=0&perPage=20&q=" . str_replace(" ", "%20", $accno) . "&showOnly=&sortBy=Relevance&sortOrder=asc";
+        $url = "https://metmuseum.org/api/collection/collectionlisting?artist=&department=10&era=&geolocation=&material=&offset=0&pageSize=0&perPage=20&q=" . str_replace(" ", "%20", $accno) . "&showOnly=&sortBy=Relevance&sortOrder=asc";
         // This is Egyptology-specific. ("department=10" is for Egyptian collection in MMA).
         $MMAjson = json_decode(downloadmusjson($url), true);
         $webid = $MMAjson["results"];
@@ -542,7 +542,7 @@ if ($helpmode == "aliases") {
                     if (is_numeric(substr($accno, 0, 1))) {
                         $accno = 'A.' . $accno; // This is Egyptology-specific. ("A" is used for all Egyptian [and possibly other] items in Edinburgh).
                     }
-                    $url1 = "http://www.nms.ac.uk/explore/collection-search-results/?mode=standard&amp;key=object_number&amp;term=$accno";
+                    $url1 = "https://www.nms.ac.uk/explore-our-collections/collection-search-results/?mode=standard&amp;key=object_number&amp;term=$accno";
                     $url2 = "http://nms.scran.ac.uk/database/results.php?query1=%22$accno%22&amp;bool1=AND&amp;query2=&amp;bool2=AND&amp;query3=&amp;FULL=1&amp;_IXSPFX_=z&amp;sortby=title&amp;sortorder=ASC&amp;mediatype=";
                     DualPage($url1, $url2);
                 } elseif ($musdef[0] == 'Louvre') {
@@ -681,13 +681,18 @@ if ($helpmode == "aliases") {
                         }
                         break;
                     case 'Glasgow Hunterian':
-
                         $accno = str_replace(' ', '.', $accno);
                         if (preg_match("/^\D\d.*/", $accno)) {
                             $accno = substr($accno, 0, 1) . "." . substr($accno, 1);
                         }
                         if (preg_match("/^\d.*/", $accno)) {
                             $accno = "D." . $accno;
+                        }
+                        break;
+                    case 'Lyon':
+                        $accno = str_replace('.', ' ', $accno);
+                        if (preg_match("/^\D\d.*/", $accno)) {
+                            $accno = substr($accno, 0, 1) . " " . substr($accno, 1);
                         }
                         break;
                     case 'Allard Pierson':
@@ -718,7 +723,14 @@ if ($helpmode == "aliases") {
                             $accno = str_replace('.', '', str_replace(' ', '', $accno));
                         }
                         break;
+                    case 'Moscow' :
 
+                        if (is_numeric(substr($accno, 0, 1))) {
+                            $accno = "I.1 " . $accno;
+                        } else {
+                            $accno = str_replace('a', 'а', str_replace('b', 'б', $accno));
+                        }
+                        break;
                     case 'Field Museum' :
                         $pos = firstnum($accno);
                         $accno = substr($accno, $pos);
@@ -802,5 +814,5 @@ if ($helpmode == "aliases") {
                             foreach ($sortedarray as &$musdef) {
                                 ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
                         </select></td></tr><tr><td align='right'>Inventory number:</td><td align='left'><input type='text' name='no' id='no' style='max-width: 202px; min-width: 202px; width: 202px !important; height: 19px !important; min-height: 19px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;' >
-                    </td><tr><td align='right'>&nbsp;</td><td align='left'><input type='submit' value='Search'></td></tr></table> </form><p>&nbsp;</p><p><div class=limit>Search forwarding is not yet supported for <a href='http://www.globalegyptianmuseum.org/advanced.aspx?lan=E'>Global Egyptian Museum</a>, <a href='http://calms.abdn.ac.uk/Geology/DServe.exe?dsqServer=Calms&amp;dsqApp=Archive&amp;dsqDb=Catalog&amp;dsqCmd=Search.tcl'>Marischal Museum, The University of Aberdeen</a>, <a href='http://www.bible-orient-museum.ch/bodo/'>Bible and Orient Museum, Fribourg</a>, <a href='http://sydney.edu.au/museums/collections_search/#advanced-search'>Nicholson Museum, The University of Sydney</a>, and <a href='http://images.rom.on.ca/public/index.php?function=query&amp;action=selected&amp;tbl=aa&amp;sid=&amp;ccid='>Toronto Royal Ontario Museum</a>.
+                    </td><tr><td align='right'>&nbsp;</td><td align='left'><input type='submit' value='Search'></td></tr></table> </form><p>&nbsp;</p><p><div class=limit>Search forwarding is not yet supported for <a href='http://www.smb-digital.de/eMuseumPlus?service%3DExternalInterface%26module%3Dcollection%26moduleFunction%3Dsearch'>The Berlin Egyptian Museum</a>, <a href='http://www.globalegyptianmuseum.org/advanced.aspx?lan=E'>Global Egyptian Museum</a>, <a href='http://calms.abdn.ac.uk/Geology/DServe.exe?dsqServer=Calms&amp;dsqApp=Archive&amp;dsqDb=Catalog&amp;dsqCmd=Search.tcl'>Marischal Museum, The University of Aberdeen</a>, <a href='http://www.bible-orient-museum.ch/bodo/'>Bible and Orient Museum, Fribourg</a>, <a href='http://sydney.edu.au/museums/collections_search/#advanced-search'>Nicholson Museum, The University of Sydney</a>, and <a href='http://images.rom.on.ca/public/index.php?function=query&amp;action=selected&amp;tbl=aa&amp;sid=&amp;ccid='>Toronto Royal Ontario Museum</a>.
             <br><small>More information on Egyptian collections can be found online on <a href='http://www.trismegistos.org/coll/list_all.php'>Trismegistos</a>, <a href='http://egyptartefacts.griffith.ox.ac.uk/?q=destinations-index'>Artefacts of Excavation</a>, and <a href='http://www.desheret.org/museum.html'>Desheret.org</a></small>.</div><p><a href='./mus.php?help=help'>About this page</a>&nbsp;|&nbsp;<a href='./mus.php?help=impressum'>Impressum</a></p></body></html>

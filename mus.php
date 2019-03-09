@@ -28,6 +28,8 @@
  * * Numerous improvements in accession number processing
  *  Version 0.7.3: 21.08.2017
  * * Updated to work with the new BM SPARQL interface and the Fitzwilliam API
+ *  *  Version 0.8: 09.03.2019
+ * * Added Bristol
  * 
  * 
  * This php script should be used as follows:
@@ -69,7 +71,8 @@
 /** Returns the location of the first digit in a string
  * This function is based on a code snippet published by Stanislav Shabalin on http://stackoverflow.com/questions/7495603/find-the-position-of-the-first-occurring-of-any-number-in-string-php 
   under the cc by-sa 3.0  license */
-function firstnum($text) {
+function firstnum($text)
+{
 
     preg_match('/\d/', $text, $match, PREG_OFFSET_CAPTURE);
     if (sizeof($match)) {
@@ -82,7 +85,8 @@ function firstnum($text) {
 /** Returns the location of the first non-digit in a string
  * This function is based on a code snippet published by Stanislav Shabalin on http://stackoverflow.com/questions/7495603/find-the-position-of-the-first-occurring-of-any-number-in-string-php 
   under the cc by-sa 3.0  license */
-function firstnonnum($text) {
+function firstnonnum($text)
+{
     preg_match('/\D/', $text, $match, PREG_OFFSET_CAPTURE);
     if (sizeof($match)) {
         return $match[0][1];
@@ -92,7 +96,8 @@ function firstnonnum($text) {
 }
 
 /** Returns the text file downloaded from $url with curl */
-function downloadmusjson($url) {
+function downloadmusjson($url)
+{
 //  Initiate curl
     $curl_handle = curl_init();
 // Disable SSL verification
@@ -112,7 +117,8 @@ function downloadmusjson($url) {
 }
 
 /** Returns the text file downloaded from $url with curl */
-function downloadmusjsonpost($url, $data) {
+function downloadmusjsonpost($url, $data)
+{
 //  Initiate curl
     $curl_handle = curl_init();
 // Disable SSL verification
@@ -140,7 +146,8 @@ function downloadmusjsonpost($url, $data) {
 }
 
 /** Displays a page with two embedded pages for the results from two different web catalogues */
-function DualPage($url1, $url2) {
+function DualPage($url1, $url2)
+{
     ?>
     <!DOCTYPE html PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8'><?php
             $musconfig = json_decode(file_get_contents("musconfig.json"), true);
@@ -158,7 +165,8 @@ function DualPage($url1, $url2) {
 
 /** Executes a query in the local database, handles errors and returns a mysqli_result object
  */
-function mySQLqueryex($mus, $searchfieldop, $sqlWHERE) {
+function mySQLqueryex($mus, $searchfieldop, $sqlWHERE)
+{
 
     $musconfig = json_decode(file_get_contents("musconfig.json"), true);
     $mysqli = new mysqli($musconfig[0], $musconfig[1], $musconfig[2], $musconfig[3]);
@@ -201,7 +209,8 @@ function mySQLqueryex($mus, $searchfieldop, $sqlWHERE) {
  * $postf - the part of of the object display page URL after the webid
  * $mus - museum name
  */
-function ReturnResults($result, $pref, $postf, $mus) {
+function ReturnResults($result, $pref, $postf, $mus)
+{
     if ($result->num_rows == 1) {
         $webid = $result->fetch_assoc();
         $url = "http://" . $pref . $webid["webid"] . $postf;
@@ -220,7 +229,8 @@ function ReturnResults($result, $pref, $postf, $mus) {
  * $pref - the part of of the object display page URL before the webid
  * $postf - the part of of the object display page URL after the webid
  * $mus - museum name */
-function ReturnResultsFromArray($res, $pref, $postf, $mus) {
+function ReturnResultsFromArray($res, $pref, $postf, $mus)
+{
     if (sizeof($res) == 1) {
         $url = "http://" . $pref . $res[0][0] . $postf;
         RedirUrl($url);
@@ -248,13 +258,13 @@ function ReturnResultsFromArray($res, $pref, $postf, $mus) {
 
 /** Redirects the user to a given URL. Supports browsers without javascript. 
  * $urlinput - url to redirect the user to */
-function RedirUrl($urlinput) {
+function RedirUrl($urlinput)
+{
     ?><!DOCTYPE html><html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><script type="text/javascript">window.location.href = "<?php echo($urlinput); ?>";</script><noscript>
             <meta http-equiv="Refresh" content="0; URL=<?php echo(str_replace(' ', '%20', str_replace('&', '&amp;', $urlinput))); ?>">
             </noscript><meta charset="utf-8"></head><body><p>&nbsp;<a href="./mus.php?help=impressum">Impressum</a></p></body></html><?php
     exit();
 }
-
 $found = false;
 $musarray = json_decode(file_get_contents("museumdefinitions.json"), true); //Loads museum definitions
 $musaliases = json_decode(file_get_contents("musaliases.json"), true); //Loads museum aliases
@@ -380,25 +390,25 @@ if ($helpmode == "aliases") {
         if (preg_match("/^\d\.\d.*/", $accno)) {
             $accno = "0" . $accno;
         }
-        $url = "https://metmuseum.org/api/collection/collectionlisting?artist=&department=10&era=&geolocation=&material=&offset=0&pageSize=0&perPage=20&q=" . str_replace(" ", "%20", $accno) . "&showOnly=&sortBy=Relevance&sortOrder=asc";
-        // This is Egyptology-specific. ("department=10" is for Egyptian collection in MMA).
+        $url = "https://collectionapi.metmuseum.org/public/collection/v1/search?q=" . str_replace(" ", "%20", $accno);
         $MMAjson = json_decode(downloadmusjson($url), true);
-        $webid = $MMAjson["results"];
+        $webid = array_slice($MMAjson["objectIDs"], 0, 5);
         $mmaids = array();
-// Test the results and filter those with invenotry matching the searched value
+// Test the results and filter those with inventory matching the searched value
+        $cnt = 0;
         foreach ($webid as &$searchres) {
-            if (($searchres['accessionNumber'] == $accno) or preg_match("/" . preg_quote($accno) . "\D.*/", $searchres['accessionNumber'])) {
-                $mmaids[] = array($searchres['url'], $searchres['accessionNumber']);
+            $url = "https://collectionapi.metmuseum.org/public/collection/v1/objects/" . $searchres;
+            $objectjson = json_decode(downloadmusjson($url), true);
+            $cnt = $cnt + 1;
+            if (($objectjson['accessionNumber'] == $accno) or preg_match("/" . preg_quote($accno) . "\D.*/", $objectjson['accessionNumber'])) {
+                $mmaids[] = array($searchres, $objectjson['accessionNumber']);
+            } elseif ($cnt > 0) {
+                break;
             }
         }
-        //if no results returned by MMA match the searched inventory, all results will be returned without the inventory filter
-        if (count($mmaids) == 0) {
-            foreach ($webid as &$searchres) {
-                $mmaids[] = array($searchres['url'], $searchres['accessionNumber']);
-            }
-        }
+
         if (count($mmaids) > 0) {
-            ReturnResultsFromArray($mmaids, "metmuseum.org", "", $mus);
+            ReturnResultsFromArray($mmaids, "www.metmuseum.org/art/collection/search/", "", $mus);
         }
     } elseif ($mus === 'Fitzwilliam') {
         $accno = str_replace(" ", ".", $accno);
@@ -459,15 +469,17 @@ if ($helpmode == "aliases") {
                     /*                     * ***********************BM */
                     // In the following line the script loads JSON with search results for "EA" + the digits contained in the searched acc. no. This is Egyptology-specific. ("EA is for Egyptian collection in BM).
 
-                    $bmdata = "PREFIX owl: <http://www.w3.org/2002/07/owl#> SELECT ?webidval WHERE { ?auth owl:sameAs <http://collection.britishmuseum.org/id/object/Y_EA" . preg_replace("/[^0-9]/", "", $accno) . "> .   ?auth owl:sameAs ?webidval .   FILTER (?webidval != <http://collection.britishmuseum.org/id/object/Y_EA" . preg_replace("/[^0-9]/", "", $accno) . ">) }";
-                    $BMjson = json_decode(downloadmusjsonpost("https://collection.britishmuseum.org/sparql", $bmdata), true);
+                    /*      $bmdata = "PREFIX owl: <http://www.w3.org/2002/07/owl#> SELECT ?webidval WHERE { ?auth owl:sameAs <http://collection.britishmuseum.org/id/object/Y_EA" . preg_replace("/[^0-9]/", "", $accno) . "> .   ?auth owl:sameAs ?webidval .   FILTER (?webidval != <http://collection.britishmuseum.org/id/object/Y_EA" . preg_replace("/[^0-9]/", "", $accno) . ">) }";
+                      $BMjson = json_decode(downloadmusjsonpost("https://collection.britishmuseum.org/sparql", $bmdata), true);
 
-                    $webid = substr($BMjson["results"]["bindings"][0]["webidval"]["value"], 46);
-                    if ($webid == null) {
-                        $url = "http://" . $musdef[6] . preg_replace("/[^0-9]/", "", $accno);
-                        RedirUrl($url);
-                        exit();
-                    }
+                      $webid = substr($BMjson["results"]["bindings"][0]["webidval"]["value"], 46);
+                      if ($webid == null) {
+                     * 
+                     */
+                    $url = "http://" . $musdef[6] . preg_replace("/[^0-9]/", "", $accno);
+                    RedirUrl($url);
+                    exit();
+                    //      }  uncomment when SPARQL is working again
                     $url = "http://" . $musdef[1] . $webid . "&?museumno=" . preg_replace("/[^0-9]/", "", $accno) . $musdef[2];
                     RedirUrl($url);
                 } elseif ($musdef[0] == 'Leiden') {
@@ -789,6 +801,19 @@ if ($helpmode == "aliases") {
                     case 'Washington':
                         $accno = str_replace(' ', '', $accno);
                         break;
+                    case 'Bristol':
+                        $accno = str_replace(' ', '', $accno);
+                        if (is_numeric(substr($accno, 0, 1))) {
+                            if (preg_match('#^(\d+)#', $accno, $match)) {  //Look for the digits
+                                $numno = $match[1];    //Use the digits captured in the brackets from the RegEx match
+                                if ($numno < 5231) {
+                                    $accno = "H" . $accno;
+                                } else {
+                                    $accno = "Ha" . $accno;
+                                }
+                            }
+                        }
+                        break;
                 }
                 $url = "http://" . $musdef[1] . $accno . $musdef[2]; // This line forms the URL for all the museums supporting GET queries
                 RedirUrl($url);
@@ -798,21 +823,21 @@ if ($helpmode == "aliases") {
     // if an unknown museum name is supplied (or no museum name) the start page is displayed
     ?>
 <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html><head><?php
-        $musconfig = json_decode(file_get_contents("musconfig.json"), true);
-        echo($musconfig[6]);
-        ?><style type='text/css'> .limit {max-width: 720px; } </style>
+    $musconfig = json_decode(file_get_contents("musconfig.json"), true);
+    echo($musconfig[6]);
+    ?><style type='text/css'> .limit {max-width: 720px; } </style>
     </head> <body> <div class=limit><h2><?php echo($musconfig[7]); ?></h2><p>Select the museum and enter the inventory number </p></div><form action='mus.php' method='get'>
             <table cellspacing="0" style="border-width:0px;border-collapse:collapse;" border =0 id="tab" class="tab">
                 <tr><td align='right'>Museum:</td><td align='left'><select name='museum' id='museum' style='max-width: 204px; min-width: 204px; width: 204px !important; height: 21px !important; min-height: 21px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;'><?php
-                            $sortedarray = array();
-                            foreach ($musarray as &$musdef) {
-                                if ($musdef[4] !== true) {
-                                    $sortedarray[] = $musdef[0];
-                                }
-                            }
-                            natcasesort($sortedarray);
-                            foreach ($sortedarray as &$musdef) {
-                                ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
+        $sortedarray = array();
+        foreach ($musarray as &$musdef) {
+            if ($musdef[4] !== true) {
+                $sortedarray[] = $musdef[0];
+            }
+        }
+        natcasesort($sortedarray);
+        foreach ($sortedarray as &$musdef) {
+        ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
                         </select></td></tr><tr><td align='right'>Inventory number:</td><td align='left'><input type='text' name='no' id='no' style='max-width: 202px; min-width: 202px; width: 202px !important; height: 19px !important; min-height: 19px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;' >
                     </td><tr><td align='right'>&nbsp;</td><td align='left'><input type='submit' value='Search'></td></tr></table> </form><p>&nbsp;</p><p><div class=limit>Search forwarding is not yet supported for <a href='http://www.smb-digital.de/eMuseumPlus?service%3DExternalInterface%26module%3Dcollection%26moduleFunction%3Dsearch'>The Berlin Egyptian Museum</a>, <a href='http://www.globalegyptianmuseum.org/advanced.aspx?lan=E'>Global Egyptian Museum</a>, <a href='http://calms.abdn.ac.uk/Geology/DServe.exe?dsqServer=Calms&amp;dsqApp=Archive&amp;dsqDb=Catalog&amp;dsqCmd=Search.tcl'>Marischal Museum, The University of Aberdeen</a>, <a href='http://www.bible-orient-museum.ch/bodo/'>Bible and Orient Museum, Fribourg</a>, <a href='http://sydney.edu.au/museums/collections_search/#advanced-search'>Nicholson Museum, The University of Sydney</a>, and <a href='http://images.rom.on.ca/public/index.php?function=query&amp;action=selected&amp;tbl=aa&amp;sid=&amp;ccid='>Toronto Royal Ontario Museum</a>.
             <br><small>More information on Egyptian collections can be found online on <a href='http://www.trismegistos.org/coll/list_all.php'>Trismegistos</a>, <a href='http://egyptartefacts.griffith.ox.ac.uk/?q=destinations-index'>Artefacts of Excavation</a>, and <a href='http://www.desheret.org/museum.html'>Desheret.org</a></small>.</div><p><a href='./mus.php?help=help'>About this page</a>&nbsp;|&nbsp;<a href='./mus.php?help=impressum'>Impressum</a></p></body></html>

@@ -306,7 +306,7 @@ if ($helpmode == "aliases") {
             $musconfig = json_decode(file_get_contents("musconfig.json"), true);
             echo($musconfig[6]);
             ?><style type='text/css'> .limit {max-width: 720px; } </style>
-        </head> <body> <h2>About this page</h2><div class=limit><p>The <?php echo($musconfig[7]); ?> is a PHP tool aimed to facilitate locating the descriptions and images of ancient Egyptian objects in online catalogues of major museums. 
+        </head> <body> <h2>About this tool</h2><div class=limit><p>The <?php echo($musconfig[7]); ?> is a PHP tool aimed to facilitate locating the descriptions and images of ancient Egyptian objects in online catalogues of major museums. 
                     Online catalogues (ranging from selections of highlights to complete digital inventories) are now offered by almost all major museums holding ancient Egyptian items and have become indispensable in research work. 
                     Yet the variety of web interfaces and of search rules may overstrain any person performing many searches in different online catalogues.</p>
                 <p><?php echo($musconfig[7]); ?> was made to provide a single search point for finding objects by their inventory numbers in major collections of Egyptian antiquities that have online catalogues. 
@@ -814,6 +814,13 @@ if ($helpmode == "aliases") {
                             }
                         }
                         break;
+                    case 'Ashmolean':
+                        $accno = str_replace(' ', '', $accno);
+                        if (is_numeric(substr($accno, 0, 1))) {
+
+                            $accno = "AN" . $accno;
+                        }
+                        break;
                 }
                 $url = "http://" . $musdef[1] . $accno . $musdef[2]; // This line forms the URL for all the museums supporting GET queries
                 RedirUrl($url);
@@ -840,4 +847,4 @@ if ($helpmode == "aliases") {
         ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
                         </select></td></tr><tr><td align='right'>Inventory number:</td><td align='left'><input type='text' name='no' id='no' style='max-width: 202px; min-width: 202px; width: 202px !important; height: 19px !important; min-height: 19px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;' >
                     </td><tr><td align='right'>&nbsp;</td><td align='left'><input type='submit' value='Search'></td></tr></table> </form><p>&nbsp;</p><p><div class=limit>Search forwarding is not yet supported for <a href='http://www.smb-digital.de/eMuseumPlus?service%3DExternalInterface%26module%3Dcollection%26moduleFunction%3Dsearch'>The Berlin Egyptian Museum</a>, <a href='http://www.globalegyptianmuseum.org/advanced.aspx?lan=E'>Global Egyptian Museum</a>, <a href='http://calms.abdn.ac.uk/Geology/DServe.exe?dsqServer=Calms&amp;dsqApp=Archive&amp;dsqDb=Catalog&amp;dsqCmd=Search.tcl'>Marischal Museum, The University of Aberdeen</a>, <a href='http://www.bible-orient-museum.ch/bodo/'>Bible and Orient Museum, Fribourg</a>, <a href='http://sydney.edu.au/museums/collections_search/#advanced-search'>Nicholson Museum, The University of Sydney</a>, and <a href='http://images.rom.on.ca/public/index.php?function=query&amp;action=selected&amp;tbl=aa&amp;sid=&amp;ccid='>Toronto Royal Ontario Museum</a>.
-            <br><small>More information on Egyptian collections can be found online on <a href='http://www.trismegistos.org/coll/list_all.php'>Trismegistos</a>, <a href='http://egyptartefacts.griffith.ox.ac.uk/?q=destinations-index'>Artefacts of Excavation</a>, and <a href='http://www.desheret.org/museum.html'>Desheret.org</a></small>.</div><p><a href='./mus.php?help=help'>About this page</a>&nbsp;|&nbsp;<a href='./mus.php?help=impressum'>Impressum</a></p></body></html>
+            <br><small>More information on Egyptian collections can be found online on <a href='http://www.trismegistos.org/coll/list_all.php'>Trismegistos</a>, <a href='http://egyptartefacts.griffith.ox.ac.uk/?q=destinations-index'>Artefacts of Excavation</a>, and <a href='http://www.desheret.org/museum.html'>Desheret.org</a></small>.</div><p><a href='./mus.php?help=help'>List of online museum catalogues and information about this tool</a>&nbsp;|&nbsp;<a href='./mus.php?help=impressum'>Impressum</a></p></body></html>

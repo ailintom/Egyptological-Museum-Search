@@ -339,7 +339,7 @@ if ($helpmode == "aliases") {
                 <p>In order to provide compatibility with other databases, which may use different designations of the museums, <?php echo($musconfig[7]); ?> supports <a href="./mus.php?help=aliases">a number of aliases</a>. Examples of query URLs:</p>
                 <p><a href='./mus.php?museum=Leyden&amp;no=D%20127' rel='nofollow'><code>http://static.egyptology.ru/varia/mus.php?museum=Leyden&amp;no=D 127</code></a></p>
                 <p><a href='./mus.php?museum=New%20York,%20Metropolitan%20Museum%20of%20Art&amp;no=56.136' rel='nofollow'><code>http://static.egyptology.ru/varia/mus.php?museum=New York, Metropolitan Museum of Art&amp;no=56.136</code></a></p>
-                <p><a href='./mus.php?museum=Turin&amp;no=Suppl.%201287' rel='nofollow'><code>http://static.egyptology.ru/varia/mus.php?museum=Turin&amp;no=Suppl. 1287</code></a></p>
+                <p><a href='./mus.php?museum=Turin&amp;no=Cat.%201374' rel='nofollow'><code>http://static.egyptology.ru/varia/mus.php?museum=Turin&amp;no=Cat. 1374</code></a></p>
                 <p>In case you wish to adapt <?php echo($musconfig[7]); ?> for the needs of a different discipline, you may make use of its <a href='https://github.com/ailintom/Egyptological-Museum-Search'>source code published on Github</a>.</p>
                 <p>&nbsp;</p><p><a href='./mus.php'><?php echo($musconfig[7]); ?></a>&nbsp;|&nbsp;<a href='./mus.php?help=impressum'>Impressum</a></p></div></body></html>
     <?php

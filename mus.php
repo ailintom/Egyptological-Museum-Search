@@ -63,7 +63,7 @@
  * Each museum alias definition is itself an array:
  * $musaliases[0] - museum alias
  * $musaliases[1] - museum identifier used in museumdefinitions.json / $musarray
- * $musaliases[2] - should the museum name in the query be equal to the defined alias or just contain it
+ * $musaliases[2] - should the museum name in the query be equal to the defined alias (true) or just contain it (false)
  * 
  * The code incorporates code snippets from various http://stackoverflow.com discussions, as indicated in the comments
  */
@@ -80,6 +80,10 @@ function firstnum($text)
     } else {
         return false;
     }
+}
+
+function showcss(){
+    echo '<style type="text/css"> .limit {max-width: 720px; } html, body {font-family: sans-serif; font-size: 16px; } td {padding-top: 9px; padding-bottom: 9px; } </style>';
 }
 
 /** Returns the location of the first non-digit in a string
@@ -149,10 +153,11 @@ function downloadmusjsonpost($url, $data)
 function DualPage($url1, $url2)
 {
     ?>
-    <!DOCTYPE html PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8'><?php
+    <!DOCTYPE html PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8'><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
             $musconfig = json_decode(file_get_contents("musconfig.json"), true);
             echo($musconfig[6]);
-            ?><style type='text/css'>body {margin: 0; } </style></head><body><div style='position: absolute; height: 100%; border: none;width:100%;overflow-y: hidden;'>
+            showcss();
+            ?></head><body><div style='position: absolute; height: 100%; border: none;width:100%;overflow-y: hidden;'>
                 <div id='LeftPart' style='height: 100%;float:left;width:50%;background-color:#FFFFFF; overflow-y: hidden;'><object type='text/html' data='<?php echo($url1); ?>' width='100%' height='100%' >
                 <!--[if lte IE 8]><iframe src='<?php echo($url1); ?>' width='100%' height='100%' >[Your browser does not support embedded objects. Please, visit<A href='<?php echo($url1); ?>'>the search page.</iframe><![endif]-->
                         [Your browser does not support embedded objects. Please, visit <A href='<?php echo($url1); ?>'>the search page.</A>]</object></div>
@@ -172,7 +177,7 @@ function mySQLqueryex($mus, $searchfieldop, $sqlWHERE)
     $mysqli = new mysqli($musconfig[0], $musconfig[1], $musconfig[2], $musconfig[3]);
     if ($mysqli->connect_errno) {
         ?>
-        <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN' 'http://www.w3.org/TR/html4/loose.dtd'> <html> <head><?php
+        <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN' 'http://www.w3.org/TR/html4/loose.dtd'> <html> <head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
                 $musconfig = json_decode(file_get_contents("musconfig.json"), true);
                 echo($musconfig[6]);
                 ?></head> <body><p>
@@ -235,7 +240,7 @@ function ReturnResultsFromArray($res, $pref, $postf, $mus)
         $url = "http://" . $pref . $res[0][0] . $postf;
         RedirUrl($url);
     } elseif (sizeof($res) > 1) {
-        ?><!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html> <head><?php
+        ?><!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html> <head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
                         $musconfig = json_decode(file_get_contents("musconfig.json"), true);
                         echo($musconfig[6]);
                         ?></head>
@@ -260,7 +265,7 @@ function ReturnResultsFromArray($res, $pref, $postf, $mus)
  * $urlinput - url to redirect the user to */
 function RedirUrl($urlinput)
 {
-    ?><!DOCTYPE html><html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><script type="text/javascript">window.location.href = "<?php echo($urlinput); ?>";</script><noscript>
+    ?><!DOCTYPE html><html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><meta name="viewport" content="width=device-width, initial-scale=1.0"><script type="text/javascript">window.location.href = "<?php echo($urlinput); ?>";</script><noscript>
             <meta http-equiv="Refresh" content="0; URL=<?php echo(str_replace(' ', '%20', str_replace('&', '&amp;', $urlinput))); ?>">
             </noscript><meta charset="utf-8"></head><body><p>&nbsp;<a href="./mus.php?help=impressum">Impressum</a></p></body></html><?php
     exit();
@@ -271,10 +276,11 @@ $musaliases = json_decode(file_get_contents("musaliases.json"), true); //Loads m
 $helpmode = filter_input(INPUT_GET, 'help', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW); // Loads the help attribute used to display help (.../mus.php?help=help) and aliases (.../mus.php?help=aliases)
 if ($helpmode == "aliases") {
     ?>
-    <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html> <head><?php
+    <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html> <head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
             $musconfig = json_decode(file_get_contents("musconfig.json"), true);
             echo($musconfig[6]);
-            ?><style type='text/css'> .limit {max-width: 720px; } </style>
+            showcss();
+            ?>
         </head> <body> <h2>The list of accepted aliases </h2><div class=limit>
                 <table cellspacing="0" style="border-width:0px;border-collapse:collapse;" border =0 id="tab" class="tab">
                     <tr><td align='left'><b>Alias</b></td><td align='left'><b>Museum</b></td><td align='left'><b>Strict match required</b></td></tr><?php
@@ -302,10 +308,11 @@ if ($helpmode == "aliases") {
     exit();
 } elseif ($helpmode == "help") {
     ?>
-    <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html> <head><?php
+    <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html> <head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
             $musconfig = json_decode(file_get_contents("musconfig.json"), true);
             echo($musconfig[6]);
-            ?><style type='text/css'> .limit {max-width: 720px; } </style>
+            showcss();
+            ?>
         </head> <body> <h2>About this tool</h2><div class=limit><p>The <?php echo($musconfig[7]); ?> is a PHP tool aimed to facilitate locating the descriptions and images of ancient Egyptian objects in online catalogues of major museums. 
                     Online catalogues (ranging from selections of highlights to complete digital inventories) are now offered by almost all major museums holding ancient Egyptian items and have become indispensable in research work. 
                     Yet the variety of web interfaces and of search rules may overstrain any person performing many searches in different online catalogues.</p>
@@ -347,10 +354,11 @@ if ($helpmode == "aliases") {
 } elseif ($helpmode == "impressum") { // Displays Impressum 
     $musconfig = json_decode(file_get_contents("musconfig.json"), true);
     ?>
-    <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html> <head><?php
+    <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html> <head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
             $musconfig = json_decode(file_get_contents("musconfig.json"), true);
             echo($musconfig[6]);
-            ?><style type='text/css'> .limit {max-width: 720px; }</style>
+            showcss();
+            ?>
         </head> <body> <div class=limit><p><h2>Impressum</h2><?php
                 echo($musconfig[5]);
                 ?><p>&nbsp;</p><p>Return to <a href='./mus.php'><?php echo($musconfig[7]); ?></a>.</p></div></body></html>
@@ -799,6 +807,7 @@ if ($helpmode == "aliases") {
                         $accno = preg_replace('~[ .]~', '', $accno);
                         break;
                     case 'Washington':
+                    case 'København':
                         $accno = str_replace(' ', '', $accno);
                         break;
                     case 'Bristol':
@@ -829,10 +838,11 @@ if ($helpmode == "aliases") {
     }
     // if an unknown museum name is supplied (or no museum name) the start page is displayed
     ?>
-<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html><head><?php
+<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
     $musconfig = json_decode(file_get_contents("musconfig.json"), true);
     echo($musconfig[6]);
-    ?><style type='text/css'> .limit {max-width: 720px; } </style>
+    showcss();
+    ?>
     </head> <body> <div class=limit><h2><?php echo($musconfig[7]); ?></h2><p>Select the museum and enter the inventory number </p></div><form action='mus.php' method='get'>
             <table cellspacing="0" style="border-width:0px;border-collapse:collapse;" border =0 id="tab" class="tab">
                 <tr><td align='right'>Museum:</td><td align='left'><select name='museum' id='museum' style='max-width: 204px; min-width: 204px; width: 204px !important; height: 21px !important; min-height: 21px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;'><?php

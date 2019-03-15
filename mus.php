@@ -82,7 +82,8 @@ function firstnum($text)
     }
 }
 
-function showcss(){
+function showcss()
+{
     echo '<style type="text/css"> .limit {max-width: 720px; } html, body {font-family: sans-serif; font-size: 16px; } td {padding-top: 9px; padding-bottom: 9px; } </style>';
 }
 
@@ -476,19 +477,18 @@ if ($helpmode == "aliases") {
                   } else */ if ($musdef[0] == 'BM') {
                     /*                     * ***********************BM */
                     // In the following line the script loads JSON with search results for "EA" + the digits contained in the searched acc. no. This is Egyptology-specific. ("EA is for Egyptian collection in BM).
+                    $acc = preg_replace("/[^0-9]/", "", $accno);
+                    $bmdata = "PREFIX owl: <http://www.w3.org/2002/07/owl#> SELECT ?webidval WHERE { ?auth owl:sameAs <http://collection.britishmuseum.org/id/object/Y_EA" . $acc . "> .   ?auth owl:sameAs ?webidval .   FILTER (?webidval != <http://collection.britishmuseum.org/id/object/Y_EA" . $acc . ">) }";
+                    $BMjson = json_decode(downloadmusjsonpost("https://collection.britishmuseum.org/sparql", $bmdata), true);
 
-                    /*      $bmdata = "PREFIX owl: <http://www.w3.org/2002/07/owl#> SELECT ?webidval WHERE { ?auth owl:sameAs <http://collection.britishmuseum.org/id/object/Y_EA" . preg_replace("/[^0-9]/", "", $accno) . "> .   ?auth owl:sameAs ?webidval .   FILTER (?webidval != <http://collection.britishmuseum.org/id/object/Y_EA" . preg_replace("/[^0-9]/", "", $accno) . ">) }";
-                      $BMjson = json_decode(downloadmusjsonpost("https://collection.britishmuseum.org/sparql", $bmdata), true);
+                    $webid = substr($BMjson["results"]["bindings"][0]["webidval"]["value"], 46);
+                    if ($webid == null) {
 
-                      $webid = substr($BMjson["results"]["bindings"][0]["webidval"]["value"], 46);
-                      if ($webid == null) {
-                     * 
-                     */
-                    $url = "http://" . $musdef[6] . preg_replace("/[^0-9]/", "", $accno);
-                    RedirUrl($url);
-                    exit();
-                    //      }  uncomment when SPARQL is working again
-                    $url = "http://" . $musdef[1] . $webid . "&?museumno=" . preg_replace("/[^0-9]/", "", $accno) . $musdef[2];
+                        $url = "http://" . $musdef[6] . preg_replace("/[^0-9]/", "", $accno);
+                        RedirUrl($url);
+                        exit();
+                    }  //uncomment when SPARQL is working again
+                    $url = "http://" . $musdef[1] . $webid . "&?museumno=" . $acc . $musdef[2];
                     RedirUrl($url);
                 } elseif ($musdef[0] == 'Leiden') {
                     /*                     * *********************** LEIDEN */
@@ -810,6 +810,9 @@ if ($helpmode == "aliases") {
                     case 'København':
                         $accno = str_replace(' ', '', $accno);
                         break;
+                    case 'San Jose':
+                        $accno = str_replace(' ', '-', $accno);
+                        break;
                     case 'Bristol':
                         $accno = str_replace(' ', '', $accno);
                         if (is_numeric(substr($accno, 0, 1))) {
@@ -839,22 +842,22 @@ if ($helpmode == "aliases") {
     // if an unknown museum name is supplied (or no museum name) the start page is displayed
     ?>
 <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
-    $musconfig = json_decode(file_get_contents("musconfig.json"), true);
-    echo($musconfig[6]);
-    showcss();
-    ?>
+        $musconfig = json_decode(file_get_contents("musconfig.json"), true);
+        echo($musconfig[6]);
+        showcss();
+        ?>
     </head> <body> <div class=limit><h2><?php echo($musconfig[7]); ?></h2><p>Select the museum and enter the inventory number </p></div><form action='mus.php' method='get'>
             <table cellspacing="0" style="border-width:0px;border-collapse:collapse;" border =0 id="tab" class="tab">
                 <tr><td align='right'>Museum:</td><td align='left'><select name='museum' id='museum' style='max-width: 204px; min-width: 204px; width: 204px !important; height: 21px !important; min-height: 21px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;'><?php
-        $sortedarray = array();
-        foreach ($musarray as &$musdef) {
-            if ($musdef[4] !== true) {
-                $sortedarray[] = $musdef[0];
-            }
-        }
-        natcasesort($sortedarray);
-        foreach ($sortedarray as &$musdef) {
-        ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
+                            $sortedarray = array();
+                            foreach ($musarray as &$musdef) {
+                                if ($musdef[4] !== true) {
+                                    $sortedarray[] = $musdef[0];
+                                }
+                            }
+                            natcasesort($sortedarray);
+                            foreach ($sortedarray as &$musdef) {
+                                ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
                         </select></td></tr><tr><td align='right'>Inventory number:</td><td align='left'><input type='text' name='no' id='no' style='max-width: 202px; min-width: 202px; width: 202px !important; height: 19px !important; min-height: 19px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;' >
                     </td><tr><td align='right'>&nbsp;</td><td align='left'><input type='submit' value='Search'></td></tr></table> </form><p>&nbsp;</p><p><div class=limit>Search forwarding is not yet supported for <a href='http://www.smb-digital.de/eMuseumPlus?service%3DExternalInterface%26module%3Dcollection%26moduleFunction%3Dsearch'>The Berlin Egyptian Museum</a>, <a href='http://www.globalegyptianmuseum.org/advanced.aspx?lan=E'>Global Egyptian Museum</a>, <a href='http://calms.abdn.ac.uk/Geology/DServe.exe?dsqServer=Calms&amp;dsqApp=Archive&amp;dsqDb=Catalog&amp;dsqCmd=Search.tcl'>Marischal Museum, The University of Aberdeen</a>, <a href='http://www.bible-orient-museum.ch/bodo/'>Bible and Orient Museum, Fribourg</a>, and <a href='http://sydney.edu.au/museums/collections_search/#advanced-search'>Nicholson Museum, The University of Sydney</a>.
             <br><small>More information on Egyptian collections can be found online on <a href='http://www.trismegistos.org/coll/list_all.php'>Trismegistos</a>, <a href='http://egyptartefacts.griffith.ox.ac.uk/?q=destinations-index'>Artefacts of Excavation</a>, and <a href='http://www.desheret.org/museum.html'>Desheret.org</a></small>.</div><p><a href='./mus.php?help=help'>List of online museum catalogues and information about this tool</a>&nbsp;|&nbsp;<a href='./mus.php?help=impressum'>Impressum</a></p></body></html>

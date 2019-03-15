@@ -1,0 +1,331 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+			<meta name="description" content="The Egyptological museum search is a PHP tool aimed to facilitate locating the descriptions and images of ancient Egyptian objects in online catalogues of major museums.">
+				<meta name="keywords" content="Egyptology, Egyptian Archaeology, Museums">
+					<link rel="author" href="https://www.aegyptologie.uni-mainz.de/ilin-tomich/">
+						<title>Egyptological museum search</title>
+						<style type="text/css"> .limit {max-width: 720px; } </style>
+					</head>
+					<body>
+						<h2>About this page</h2>
+						<div class="limit">
+							<p>The
+ Egyptological museum search is a PHP tool aimed to facilitate locating 
+the descriptions and images of ancient Egyptian objects in online 
+catalogues of major museums. 
+                    Online catalogues (ranging from selections of 
+highlights to complete digital inventories) are now offered by almost 
+all major museums holding ancient Egyptian items and have become 
+indispensable in research work. 
+                    Yet the variety of web interfaces and of search 
+rules may overstrain any person performing many searches in different 
+online catalogues.</p>
+							<p>Egyptological museum search was made to provide a 
+single search point for finding objects by their inventory numbers in 
+major collections of Egyptian antiquities that have online catalogues. 
+                    It tries to convert user input into search queries 
+recognised by museums’ websites. (Thus on museum websites, stela Geneva D
+ 50 should be searched as “D 0050,” statue Vienna ÄS 5046 as 
+“AE_INV_5046,” and coffin Turin Suppl. 5217 as “S. 05217.” Egyptological
+ museum search aims to allow searching for inventory numbers in the 
+form, in which they are cited in scholarly literature.) The following 
+online catalogues are supported:</p>
+							<table style="border-width:0px;border-collapse:collapse;" id="tab" class="tab" cellspacing="0" border="0">
+								<tbody>
+									<tr>
+										<td align="left">
+											<b>Short name</b>
+										</td>
+										<td align="left">
+											<b>Full name</b>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Allard Pierson</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Amsterdam,+Allard+Pierson&no=8789">Allard Pierson Museum, Amsterdam</a>
+										</td>
+									</tr>
+                                                                        									<tr>
+										<td align="left"> Ashmolean</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Ashmolean&no=1954.759">Ashmolean, Oxford</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Berkeley</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Berkeley&no=6-19924">Phoebe A. Hearst Museum of Anthropology, University of California, Berkeley</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Bibliotheca Alexandrina</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Bibliotheca+Alexandrina&no=610">Bibliotheca Alexandrina Antiquities Museum</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> BM</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=BM&no=969">British Museum</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Bologna</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Bologna&no=1912">The Archaeological Civic Museum of Bologna</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Bolton</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Bolton&no=1905.68:02">Bolton Museum</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Boston</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Boston&no=57.440">Museum of Fine Arts, Boston</a>
+										</td>
+									</tr>
+                                                                                                                                                									<tr>
+										<td align="left"> Bristol</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Bristol&no=H 500">Bristol</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Brooklyn</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Brooklyn&no=36.837">Brooklyn Museum</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Bruxelles</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Bruxelles&no=E.8244">Royal Museums of Art and History, Brussels</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Budapest</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Budapest&no=51.2147">Museum of Fine Arts, Budapest</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Cleveland</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Cleveland&no=1932.190">The Cleveland Museum of Art</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Durham</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Durham&no=EG513">Oriental Museum, Durham University</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Edinburgh</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Edinburgh&no=A.1910.96">National Museum of Scotland, Edinburgh</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Field Museum</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Field&no=31694">Field Museum, Chicago</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Fitzwilliam</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Fitzwilliam&no=E.47.1902">The Fitzwilliam Museum, University of Cambridge</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Genève</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Genève&no=4767">The Museum of Art and History of the City of Geneva</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Glasgow Hunterian</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Glasgow Hunterian&no=D.1921.35">Hunterian Museum Archaeology &amp; Ethnography Collections, Glasgow</a>
+										</td>
+									</tr>
+                                                                        									<tr>
+										<td align="left"> København</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=København&no=Aad 10">	National Museum of Denmark, Copenhagen</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Jerusalem</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Jerusalem&no=76.31.90">Israel Museum, Jerusalem</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Leiden</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Leiden&no=AP 34">National Museum of Antiquities, Leiden</a> (Egyptological museum search can search by both inventory and Leemans numbers)</td>
+									</tr>
+									<tr>
+										<td align="left"> Liverpool WM</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Liverpool&no=M.13505">World Museum, National Museums Liverpool</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Los Angeles County Museum</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Los Angeles County Museum&no=M.86.313.11">Los Angeles County Museum of Art</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Louvre</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Louvre&no=E.26904">The Louvre, Paris</a>
+										</td>
+									</tr>
+                                                                                                                                                									<tr>
+										<td align="left"> Lyon</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Lyon&no=H 1376">Museum of Fine Arts, Lyon</a>
+										</td>
+									</tr>
+                                                                        									<tr>
+										<td align="left"> Madrid</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Madrid&no=1976/114/b/5">	National Archaeological Museum, Madrid</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Manchester</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Manchester&no=2933">The Manchester Museum, The University of Manchester</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> MMA</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=MMA&no=35.3.110">The Metropolitan Museum of Art, New York</a>
+										</td>
+									</tr>
+                                                                        									<tr>
+										<td align="left"> Moscow</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Moscow&no=1136">The Pushkin State Museum of Fine Arts, Moscow</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Ny Carlsberg</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Ny+Carlsberg&no=ÆIN 1616">Ny Carlsberg Glyptotek, Copenhagen</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> OIM</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=OIM&no=1367">Oriental Institute Museum, The University of Chicago</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Philadelphia</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Philadelphia&no=E.9189">The University of Pennsylvania Museum of Archaeology and Anthropology, Philadelphia</a>
+										</td>
+									</tr>
+                                                                        									<tr>
+										<td align="left"> San Jose</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=San Jose&no=RC 1584">San Jose</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Stockholm</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Stockholm&no=NME 39">Museum of Mediterranean and Near Eastern Antiquities, Stockholm</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Swansea</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Swansea&no=EC 7">The Egypt Centre Museum of Egyptian Antiquities, Swansea University</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Torino</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Torino&no=S. 1843">Egyptian Museum, Turin</a>
+										</td>
+									</tr>
+                                                                        									<tr>
+										<td align="left"> Toronto</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Toronto&no=910.34.155">Royal Ontario Museum, Toronto</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> UC</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=UC&no=14617">The Petrie Museum of Egyptian Archaeology, University College London</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Walters</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Walters&no=22.142">The Walters Art Museum, Baltimore</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Washington</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Washington&no=A 279281">National Museum of Natural History, The Smithsonian, Washington</a>
+										</td>
+									</tr>
+									<tr>
+										<td align="left"> Wien</td>
+										<td align="left">
+											<a href="http://static.egyptology.ru/varia/mus.php?museum=Wien&no=5897">The Museum of Art History, Vienna</a>
+										</td>
+									</tr>
+								</tbody>
+							</table> <p>The
+ tool can be used in two ways. First, one may use the online search 
+interface. One may select the museum, enter the searched inventory 
+number in the box, and press “Search.” Then the browser is redirected 
+either to the object desription in the online museum catalogue or to a 
+search results page on the museum website.
+                    Second, one may send HTTP GET queries to the 
+Egyptological museum search in order to connect it to a one’s own online
+ or offline application by creating query URLs of the following form:</p>
+							<code>http://static.egyptology.ru/varia/mus.php?museum=(Museum)&amp;no=(Inventory number)</code>
+							<p>In order to provide compatibility with other 
+databases, which may use different designations of the museums, 
+Egyptological museum search supports <a href="http://static.egyptology.ru/varia/mus.php?help=aliases">a number of aliases</a>. Examples of query URLs:</p>
+							<p>
+								<a href="http://static.egyptology.ru/varia/mus.php?museum=Leyden&amp;no=D%20127" rel="nofollow">
+									<code>http://static.egyptology.ru/varia/mus.php?museum=Leyden&amp;no=D 127</code>
+								</a>
+							</p>
+							<p>
+								<a href="http://static.egyptology.ru/varia/mus.php?museum=New%20York,%20Metropolitan%20Museum%20of%20Art&amp;no=56.136" rel="nofollow">
+									<code>http://static.egyptology.ru/varia/mus.php?museum=New York, Metropolitan Museum of Art&amp;no=56.136</code>
+								</a>
+							</p>
+							<p>
+								<a href="http://static.egyptology.ru/varia/mus.php?museum=Turin&amp;no=Suppl.%201287" rel="nofollow">
+									<code>http://static.egyptology.ru/varia/mus.php?museum=Turin&amp;no=Suppl. 1287</code>
+								</a>
+							</p>
+							<p>In case you wish to adapt Egyptological museum search for the needs of a different discipline, you may make use of its <a href="https://github.com/ailintom/Egyptological-Museum-Search">source code published on Github</a>.</p>
+							<p>&nbsp;</p><p>
+								<a href="http://static.egyptology.ru/varia/mus.php">Egyptological museum search</a>&nbsp;|&nbsp;<a href="http://static.egyptology.ru/varia/mus.php?help=impressum">Impressum</a>
+							</p>
+						</div>
+					</body>
+				</html>

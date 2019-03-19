@@ -320,7 +320,7 @@ if ($helpmode == "aliases") {
                 <p><?php echo($musconfig[7]); ?> was made to provide a single search point for finding objects by their inventory numbers in major collections of Egyptian antiquities that have online catalogues. 
                     It tries to convert user input into search queries recognised by museums’ websites. (Thus on museum websites, stela Geneva D 50 should be searched as “D 0050,” statue Vienna ÄS 5046 as “AE_INV_5046,” and coffin Turin Suppl. 5217 as “S. 05217.” <?php echo($musconfig[7]); ?> aims to allow searching for inventory numbers in the form, in which they are cited in scholarly literature.) The following online catalogues are supported:</p>
                 <table cellspacing="0" style="border-width:0px;border-collapse:collapse;" border =0 id="tab" class="tab">
-                    <tr><td align='left'><b>Short name</b></td><td align='left'><b>Full name</b></td></tr>
+                    <tr><td align='left'><b>Short name</b></td><td align='left'><b>Full name</b></td><td align='left'><b>Free license</b></td></tr>
                     <?php
                     $sortedarray = array();
                     foreach ($musarray as &$musdef) {
@@ -335,13 +335,15 @@ if ($helpmode == "aliases") {
                             $match = strcasecmp($musdef1, $musfulldef[0]) == 0;
                             if ($match == true) {
                                 ?>
-                                <tr><td align='left'> <?php echo($musfulldef[0]); ?></td><td align='left'><?php echo str_replace('&', '&amp;', $musfulldef[7]); ?></td></tr><?php
+                                <tr><td align='left'> <?php echo($musfulldef[0]); ?></td><td align='left'><?php echo str_replace('&', '&amp;', $musfulldef[7]); ?></td><td align='left'><?php echo ($musfulldef[8]); ?></td></tr><?php
                                 break;
                             }
                         }
                     }
                     ?>
-                </table> <p>The tool can be used in two ways. First, one may use the online search interface. One may select the museum, enter the searched inventory number in the box, and press “Search.” Then the browser is redirected either to the object desription in the online museum catalogue or to a search results page on the museum website.
+                </table> <div style="  border-left: solid #000000;  padding-left:15px;">
+                    Note: NC licenses virtually only allow using images in presentations and theses. CC 0 and CC BY allow using images in printed publications and on websites.<p>Search forwarding is not yet supported for <a href='http://www.smb-digital.de/eMuseumPlus?service%3DExternalInterface%26module%3Dcollection%26moduleFunction%3Dsearch'>The Berlin Egyptian Museum</a>, <a href='http://www.globalegyptianmuseum.org/advanced.aspx?lan=E'>Global Egyptian Museum</a>, and <a href='http://www.bible-orient-museum.ch/bodo/'>Bible and Orient Museum, Fribourg</a>.</p><p>More information on Egyptian collections can be found online on <a href='http://www.trismegistos.org/coll/list_all.php'>Trismegistos</a>, <a href='http://egyptartefacts.griffith.ox.ac.uk/?q=destinations-index'>Artefacts of Excavation</a>, and <a href='http://www.desheret.org/museum.html'>Desheret.org</a>.</p> 
+                </div><p>The tool can be used in two ways. First, one may use the online search interface. One may select the museum, enter the searched inventory number in the box, and press “Search.” Then the browser is redirected either to the object desription in the online museum catalogue or to a search results page on the museum website.
                     Second, one may send HTTP GET queries to the <?php echo($musconfig[7]); ?> in order to connect it to a one’s own online or offline application by creating query URLs of the following form:</p>
                 <code>http://static.egyptology.ru/varia/mus.php?museum=(Museum)&amp;no=(Inventory number)</code>
                 <p>In order to provide compatibility with other databases, which may use different designations of the museums, <?php echo($musconfig[7]); ?> supports <a href="./mus.php?help=aliases">a number of aliases</a>. Examples of query URLs:</p>
@@ -826,11 +828,25 @@ if ($helpmode == "aliases") {
                             }
                         }
                         break;
+                    case 'Sydney':
+                        $accno = str_replace(' ', '', $accno);
+                        if (substr($accno, 0, 2) != "NM") {
+
+                            $accno = "NM" . $accno;
+                        }
+                        break;
                     case 'Ashmolean':
                         $accno = str_replace(' ', '', $accno);
                         if (is_numeric(substr($accno, 0, 1))) {
 
                             $accno = "AN" . $accno;
+                        }
+                        break;
+                    case 'Aberdeen':
+                        $accno = str_replace(' ', '', $accno);
+                        if (is_numeric(substr($accno, 0, 1))) {
+
+                            $accno = "ABDUA:" . $accno;
                         }
                         break;
                 }
@@ -842,22 +858,21 @@ if ($helpmode == "aliases") {
     // if an unknown museum name is supplied (or no museum name) the start page is displayed
     ?>
 <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
-        $musconfig = json_decode(file_get_contents("musconfig.json"), true);
-        echo($musconfig[6]);
-        showcss();
-        ?>
+    $musconfig = json_decode(file_get_contents("musconfig.json"), true);
+    echo($musconfig[6]);
+    showcss();
+    ?>
     </head> <body> <div class=limit><h2><?php echo($musconfig[7]); ?></h2><p>Select the museum and enter the inventory number </p></div><form action='mus.php' method='get'>
             <table cellspacing="0" style="border-width:0px;border-collapse:collapse;" border =0 id="tab" class="tab">
                 <tr><td align='right'>Museum:</td><td align='left'><select name='museum' id='museum' style='max-width: 204px; min-width: 204px; width: 204px !important; height: 21px !important; min-height: 21px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;'><?php
-                            $sortedarray = array();
-                            foreach ($musarray as &$musdef) {
-                                if ($musdef[4] !== true) {
-                                    $sortedarray[] = $musdef[0];
-                                }
-                            }
-                            natcasesort($sortedarray);
-                            foreach ($sortedarray as &$musdef) {
-                                ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
+        $sortedarray = array();
+        foreach ($musarray as &$musdef) {
+            if ($musdef[4] !== true) {
+                $sortedarray[] = $musdef[0];
+            }
+        }
+        natcasesort($sortedarray);
+        foreach ($sortedarray as &$musdef) {
+        ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
                         </select></td></tr><tr><td align='right'>Inventory number:</td><td align='left'><input type='text' name='no' id='no' style='max-width: 202px; min-width: 202px; width: 202px !important; height: 19px !important; min-height: 19px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;' >
-                    </td><tr><td align='right'>&nbsp;</td><td align='left'><input type='submit' value='Search'></td></tr></table> </form><p>&nbsp;</p><p><div class=limit>Search forwarding is not yet supported for <a href='http://www.smb-digital.de/eMuseumPlus?service%3DExternalInterface%26module%3Dcollection%26moduleFunction%3Dsearch'>The Berlin Egyptian Museum</a>, <a href='http://www.globalegyptianmuseum.org/advanced.aspx?lan=E'>Global Egyptian Museum</a>, <a href='http://calms.abdn.ac.uk/Geology/DServe.exe?dsqServer=Calms&amp;dsqApp=Archive&amp;dsqDb=Catalog&amp;dsqCmd=Search.tcl'>Marischal Museum, The University of Aberdeen</a>, <a href='http://www.bible-orient-museum.ch/bodo/'>Bible and Orient Museum, Fribourg</a>, and <a href='http://sydney.edu.au/museums/collections_search/#advanced-search'>Nicholson Museum, The University of Sydney</a>.
-            <br><small>More information on Egyptian collections can be found online on <a href='http://www.trismegistos.org/coll/list_all.php'>Trismegistos</a>, <a href='http://egyptartefacts.griffith.ox.ac.uk/?q=destinations-index'>Artefacts of Excavation</a>, and <a href='http://www.desheret.org/museum.html'>Desheret.org</a></small>.</div><p><a href='./mus.php?help=help'>List of online museum catalogues and information about this tool</a>&nbsp;|&nbsp;<a href='./mus.php?help=impressum'>Impressum</a></p></body></html>
+                    </td><tr><td align='right'>&nbsp;</td><td align='left'><input type='submit' value='Search'></td></tr></table> </form><p>&nbsp;</p><p><a href='./mus.php?help=help'>List of online museum catalogues and information about this tool</a>&nbsp;|&nbsp;<a href='./mus.php?help=impressum'>Impressum</a></p></body></html>

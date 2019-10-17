@@ -538,7 +538,7 @@ foreach ($musarray as &$musdef) {
                 if (preg_match("/^[^0-9 .]\d.*/", $accno)) {
                     $accno = substr($accno, 0, 1) . " " . substr($accno, 1);
                 }
-                $accno = str_replace(' ', '.', $accno);
+                /*$accno = str_replace(' ', '.', $accno);*/
                 $accno = str_replace('..', '.', $accno);
                 $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') = ", $accno);
                 if ($result->num_rows === 0) {

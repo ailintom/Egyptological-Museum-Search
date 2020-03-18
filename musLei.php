@@ -206,7 +206,7 @@ function mySQLqueryex($mus, $searchfieldop, $sqlWHERE)
         <?php
         exit();
     }
-
+echo "SQL: "  . $sql  . ";; found:". $result->num_rows;
     $mysqli->close();
     return $result;
 }
@@ -567,10 +567,13 @@ foreach ($musarray as &$musdef) {
                 if ($result->num_rows === 0) {
                     $url = "https://" . $musdef[6] . $accno;
                     RedirUrl($url);
-                    exit();
+                    #echo "nothing found. accno = ".$accno;
+                    #exit();
                 }
                 if ($result->num_rows > 1) {
-                    ReturnResults($result, $musdef[1], $musdef[2], $mus);
+                    echo "found";
+                    exit();
+                    #ReturnResults($result, $musdef[1], $musdef[2], $mus);
                 }
                 $webid = $result->fetch_assoc();
 

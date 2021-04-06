@@ -520,11 +520,11 @@ foreach ($musarray as &$musdef) {
                 $webid = substr($BMjson["results"]["bindings"][0]["webidval"]["value"], 46);
                 if ($webid == null) {
 
-                    $url = "http://" . $musdef[6] . preg_replace("/[^0-9]/", "", $accno);
+                    $url = "https://" . $musdef[6] . 'EA'. preg_replace("/[^0-9]/", "", $accno);
                     RedirUrl($url);
                     exit();
                 }  //uncomment when SPARQL is working again
-                $url = "http://" . $musdef[1] . $webid . "&?museumno=" . $acc . $musdef[2];
+                $url = "https://" . $musdef[1] . $webid . "&?museumno=" . $acc . $musdef[2];
                 RedirUrl($url);
             } elseif ($musdef[0] == 'Leiden') {
                 /*                 * *********************** LEIDEN */
@@ -716,7 +716,7 @@ foreach ($musarray as &$musdef) {
             }
         } else {
             /*             * ***********************OTHER MUSEUMS */
-            if (in_array($musdef[0], array("Aberdeen", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester","Swansea", "Warszawa"))) {
+            if (in_array($musdef[0], array("Stockholm", "Aberdeen", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester","Swansea","UC",  "Warszawa"))) {
                $protocol = "http"; 
             }else{
             $protocol = "https";
@@ -777,6 +777,33 @@ foreach ($musarray as &$musdef) {
                         }
                     }
                     break;
+case 'Torino':
+                /*                 * ***********************TORINO */
+                $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
+                $pos = firstnum($accno);
+                if (!($pos === false)) {
+                    $numaccno = substr($accno, $pos);
+                    //  $pref = substr($accno, 0, $pos);
+                    $endpos = firstnonnum($numaccno);
+					$nonnum  = "";
+                    if (!($endpos === false)) {
+                        $nonnum = str_replace(' ', '', substr($numaccno, $endpos));
+                        $numaccno = substr($numaccno, 0, $endpos);
+                    }
+                }
+
+                if (stripos($accno, 'S') !== false) {
+                    $accno = "inventoryNumber=S. " . $numaccno . $nonnum;
+                }elseif (stripos($accno, 'prov') !== false) {
+                    $accno = "inventoryNumber=Provv. " . $numaccno . $nonnum;
+                }elseif (stripos($accno, 'CG') !== false) {
+                    $accno = "cgt=" .  $numaccno . $nonnum;
+                }elseif (stripos($accno, 'C') !== false) {
+                    $accno = "inventoryNumber=Cat. " . $numaccno . $nonnum;
+                }else{
+				 $accno = "inventoryNumber=" . $accno;
+				}
+break;				
                 case 'Philadelphia':
                     $accno = preg_replace('~[ .]~', '', $accno);
                     break;

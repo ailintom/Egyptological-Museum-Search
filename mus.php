@@ -601,31 +601,7 @@ foreach ($musarray as &$musdef) {
                 $url1 = "https://www.nms.ac.uk/explore-our-collections/collection-search-results/?mode=standard&amp;key=object_number&amp;term=$accno";
                 $url2 = "http://nms.scran.ac.uk/database/results.php?query1=%22$accno%22&amp;bool1=AND&amp;query2=&amp;bool2=AND&amp;query3=&amp;FULL=1&amp;_IXSPFX_=z&amp;sortby=title&amp;sortorder=ASC&amp;mediatype=";
                 DualPage($url1, $url2);
-            } elseif ($musdef[0] == 'Louvre') {
-                /*                 * ***********************LOUVRE */
-                $accno = str_replace('.', ' ', $accno);
-                $accno = str_replace('  ', ' ', $accno);
-                if (preg_match("/^[^0-9 .][^0-9 .]\d.*/", $accno)) {
-                    $accno = substr($accno, 0, 2) . " " . substr($accno, 2);
-                }
-                if (preg_match("/^[^0-9 .]\d.*/", $accno)) {
-                    $accno = substr($accno, 0, 1) . " " . substr($accno, 1);
-                }
-                $result = mySQLqueryex($musdef[0], "REPLACE(inv, '.', ' ') = ", $accno);
-
-                if (($result->num_rows === 0) and ( is_numeric($accno))) {
-                    $result = mySQLqueryex($musdef[0], "STRIP_NON_DIGIT(inv) =", $accno);
-                }
-                if ($result->num_rows === 0) {
-                    $result = mySQLqueryex($musdef[0], "REPLACE(inv, '.', ' ') like ", $accno . " %");
-                }
-                if ($result->num_rows === 0) {
-                    $url = 'http://' . $musdef[6] . '%22' . $accno . '%22';
-                    RedirUrl($url);
-                    exit();
-                }
-                ReturnResults($result, $musdef[1], $musdef[2], $mus);
-            } elseif ($musdef[0] == 'Bruxelles') {
+             } elseif ($musdef[0] == 'Bruxelles') {
                 /*                 * ***********************BRUXELLES */
                 $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
                 $pos = firstnum($accno);
@@ -716,7 +692,7 @@ foreach ($musarray as &$musdef) {
             }
         } else {
             /*             * ***********************OTHER MUSEUMS */
-            if (in_array($musdef[0], array("Stockholm", "Aberdeen", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester","Swansea","UC",  "Warszawa"))) {
+            if (in_array($musdef[0], array("Stockholm", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester","Swansea","UC",  "Warszawa"))) {
                $protocol = "http"; 
             }else{
             $protocol = "https";

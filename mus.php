@@ -30,7 +30,7 @@
  * * Updated to work with the new BM SPARQL interface and the Fitzwilliam API
  *  *  Version 0.8: 09.03.2019
  * * Added Bristol
-  *  *  Version 0.9: 23.04.2019
+ *  *  Version 0.9: 23.04.2019
  * * Added Berlin
  * 
  * 
@@ -73,8 +73,7 @@
 /** Returns the location of the first digit in a string
  * This function is based on a code snippet published by Stanislav Shabalin on http://stackoverflow.com/questions/7495603/find-the-position-of-the-first-occurring-of-any-number-in-string-php 
   under the cc by-sa 3.0  license */
-function firstnum($text)
-{
+function firstnum($text) {
 
     preg_match('/\d/', $text, $match, PREG_OFFSET_CAPTURE);
     if (sizeof($match)) {
@@ -84,78 +83,115 @@ function firstnum($text)
     }
 }
 
-function showcss()
-{
-    echo '<style type="text/css"> .limit {max-width: 720px; } html, body {font-family: sans-serif; font-size: 16px; } td {padding-top: 9px; padding-bottom: 9px; } </style>';
-}
+function showcss() {
+    ?> <style type="text/css"> .limit {max-width: 720px; } html, body {font-family: sans-serif; font-size: 16px; } td {padding-top: 9px; padding-bottom: 9px; } 
+        .overlay {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            visibility: hidden;
+            opacity: 0;
+        }
+        .overlay:target {
+            visibility: visible;
+            opacity: 1;
+        }
 
-/** Returns the location of the first non-digit in a string
- * This function is based on a code snippet published by Stanislav Shabalin on http://stackoverflow.com/questions/7495603/find-the-position-of-the-first-occurring-of-any-number-in-string-php 
-  under the cc by-sa 3.0  license */
-function firstnonnum($text)
-{
-    preg_match('/\D/', $text, $match, PREG_OFFSET_CAPTURE);
-    if (sizeof($match)) {
-        return $match[0][1];
-    } else {
-        return false;
+        .popup {
+            margin: 60px auto;
+            padding: 15px;
+            background: #fff;
+            border-radius: 5px;
+            width: 50%;
+            position: relative;
+
+
+        }
+        .popup .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            transition: all 200ms;
+            font-size: 30px;
+            font-weight: bold;
+            text-decoration: none;
+            color: #333;
+        }
+        .popup .close:hover {
+            color: #06D85F;
+        }
+        .popup .content {
+            max-height: 30%;
+            overflow: auto;
+        }</style><?php
     }
-}
 
-/** Returns the text file downloaded from $url with curl */
-function downloadmusjson($url)
-{
+    /** Returns the location of the first non-digit in a string
+     * This function is based on a code snippet published by Stanislav Shabalin on http://stackoverflow.com/questions/7495603/find-the-position-of-the-first-occurring-of-any-number-in-string-php 
+      under the cc by-sa 3.0  license */
+    function firstnonnum($text) {
+        preg_match('/\D/', $text, $match, PREG_OFFSET_CAPTURE);
+        if (sizeof($match)) {
+            return $match[0][1];
+        } else {
+            return false;
+        }
+    }
+
+    /** Returns the text file downloaded from $url with curl */
+    function downloadmusjson($url) {
 //  Initiate curl
-    $curl_handle = curl_init();
+        $curl_handle = curl_init();
 // Disable SSL verification
-    curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, false);
 // Return the response, if false it print the response
-    curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
 // Set the url
-    curl_setopt($curl_handle, CURLOPT_URL, $url);
+        curl_setopt($curl_handle, CURLOPT_URL, $url);
 // Set the user-agent 
-    $musconfig = json_decode(file_get_contents("musconfig.json"), true);
-    curl_setopt($curl_handle, CURLOPT_USERAGENT, $musconfig[4]);
+        $musconfig = json_decode(file_get_contents("musconfig.json"), true);
+        curl_setopt($curl_handle, CURLOPT_USERAGENT, $musconfig[4]);
 // Execute
-    $res = curl_exec($curl_handle);
+        $res = curl_exec($curl_handle);
 // Closing
-    curl_close($curl_handle);
-    return $res;
-}
+        curl_close($curl_handle);
+        return $res;
+    }
 
-/** Returns the text file downloaded from $url with curl */
-function downloadmusjsonpost($url, $data)
-{
+    /** Returns the text file downloaded from $url with curl */
+    function downloadmusjsonpost($url, $data) {
 //  Initiate curl
-    $curl_handle = curl_init();
+        $curl_handle = curl_init();
 // Disable SSL verification
-    curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, false);
 // 
-    curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
-    //Set headers
-    $headers = array();
-    $headers[] = 'Accept: application/sparql-results+json';
-    $headers[] = 'Content-Type: application/sparql-query; charset=utf-8';
-    curl_setopt($curl_handle, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($curl_handle, CURLOPT_POST, 1);
-    curl_setopt($curl_handle, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
+        //Set headers
+        $headers = array();
+        $headers[] = 'Accept: application/sparql-results+json';
+        $headers[] = 'Content-Type: application/sparql-query; charset=utf-8';
+        curl_setopt($curl_handle, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($curl_handle, CURLOPT_POST, 1);
+        curl_setopt($curl_handle, CURLOPT_POSTFIELDS, $data);
 // Set the url
-    curl_setopt($curl_handle, CURLOPT_URL, $url);
+        curl_setopt($curl_handle, CURLOPT_URL, $url);
 // Set the user-agent 
-    $musconfig = json_decode(file_get_contents("musconfig.json"), true);
-    curl_setopt($curl_handle, CURLOPT_USERAGENT, $musconfig[4]);
+        $musconfig = json_decode(file_get_contents("musconfig.json"), true);
+        curl_setopt($curl_handle, CURLOPT_USERAGENT, $musconfig[4]);
 // Execute
-    $res = curl_exec($curl_handle);
+        $res = curl_exec($curl_handle);
 // Closing
-    curl_close($curl_handle);
+        curl_close($curl_handle);
 
-    return $res;
-}
+        return $res;
+    }
 
-/** Displays a page with two embedded pages for the results from two different web catalogues */
-function DualPage($url1, $url2)
-{
-    ?>
+    /** Displays a page with two embedded pages for the results from two different web catalogues */
+    function DualPage($url1, $url2) {
+        ?>
     <!DOCTYPE html PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8'><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
             $musconfig = json_decode(file_get_contents("musconfig.json"), true);
             echo($musconfig[6]);
@@ -173,8 +209,7 @@ function DualPage($url1, $url2)
 
 /** Executes a query in the local database, handles errors and returns a mysqli_result object
  */
-function mySQLqueryex($mus, $searchfieldop, $sqlWHERE)
-{
+function mySQLqueryex($mus, $searchfieldop, $sqlWHERE) {
 
     $musconfig = json_decode(file_get_contents("musconfig.json"), true);
     $mysqli = new mysqli($musconfig[0], $musconfig[1], $musconfig[2], $musconfig[3]);
@@ -217,8 +252,7 @@ function mySQLqueryex($mus, $searchfieldop, $sqlWHERE)
  * $postf - the part of of the object display page URL after the webid
  * $mus - museum name
  */
-function ReturnResults($result, $pref, $postf, $mus)
-{
+function ReturnResults($result, $pref, $postf, $mus) {
     if ($result->num_rows == 1) {
         $webid = $result->fetch_assoc();
         $url = "http://" . $pref . $webid["webid"] . $postf;
@@ -237,8 +271,7 @@ function ReturnResults($result, $pref, $postf, $mus)
  * $pref - the part of of the object display page URL before the webid
  * $postf - the part of of the object display page URL after the webid
  * $mus - museum name */
-function ReturnResultsFromArray($res, $pref, $postf, $mus)
-{
+function ReturnResultsFromArray($res, $pref, $postf, $mus) {
     if (sizeof($res) == 1) {
         $url = "http://" . $pref . $res[0][0] . $postf;
         RedirUrl($url);
@@ -266,13 +299,13 @@ function ReturnResultsFromArray($res, $pref, $postf, $mus)
 
 /** Redirects the user to a given URL. Supports browsers without javascript. 
  * $urlinput - url to redirect the user to */
-function RedirUrl($urlinput)
-{
+function RedirUrl($urlinput) {
     ?><!DOCTYPE html><html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><meta name="viewport" content="width=device-width, initial-scale=1.0"><script type="text/javascript">window.location.href = "<?php echo($urlinput); ?>";</script><noscript>
             <meta http-equiv="Refresh" content="0; URL=<?php echo(str_replace(' ', '%20', str_replace('&', '&amp;', $urlinput))); ?>">
             </noscript><meta charset="utf-8"></head><body><p>&nbsp;<a href="./mus.php?help=impressum">Impressum</a></p></body></html><?php
     exit();
 }
+
 $found = false;
 $musarray = json_decode(file_get_contents("museumdefinitions.json"), true); //Loads museum definitions
 $musaliases = json_decode(file_get_contents("musaliases.json"), true); //Loads museum aliases
@@ -520,7 +553,7 @@ foreach ($musarray as &$musdef) {
                 $webid = substr($BMjson["results"]["bindings"][0]["webidval"]["value"], 46);
                 if ($webid == null) {
 
-                    $url = "https://" . $musdef[6] . 'EA'. preg_replace("/[^0-9]/", "", $accno);
+                    $url = "https://" . $musdef[6] . 'EA' . preg_replace("/[^0-9]/", "", $accno);
                     RedirUrl($url);
                     exit();
                 }  //uncomment when SPARQL is working again
@@ -601,7 +634,7 @@ foreach ($musarray as &$musdef) {
                 $url1 = "https://www.nms.ac.uk/explore-our-collections/collection-search-results/?mode=standard&amp;key=object_number&amp;term=$accno";
                 $url2 = "http://nms.scran.ac.uk/database/results.php?query1=%22$accno%22&amp;bool1=AND&amp;query2=&amp;bool2=AND&amp;query3=&amp;FULL=1&amp;_IXSPFX_=z&amp;sortby=title&amp;sortorder=ASC&amp;mediatype=";
                 DualPage($url1, $url2);
-             } elseif ($musdef[0] == 'Bruxelles') {
+            } elseif ($musdef[0] == 'Bruxelles') {
                 /*                 * ***********************BRUXELLES */
                 $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
                 $pos = firstnum($accno);
@@ -692,12 +725,12 @@ foreach ($musarray as &$musdef) {
             }
         } else {
             /*             * ***********************OTHER MUSEUMS */
-            if (in_array($musdef[0], array("Stockholm", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester","Swansea","UC",  "Warszawa"))) {
-               $protocol = "http"; 
-            }else{
-            $protocol = "https";
+            if (in_array($musdef[0], array("Stockholm", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester", "Swansea", "UC", "Warszawa"))) {
+                $protocol = "http";
+            } else {
+                $protocol = "https";
             }
-            
+
             switch ($musdef[0]) {
                 case 'Genève':
                     if (is_numeric($accno)) {
@@ -753,33 +786,33 @@ foreach ($musarray as &$musdef) {
                         }
                     }
                     break;
-case 'Torino':
-                /*                 * ***********************TORINO */
-                $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
-                $pos = firstnum($accno);
-                if (!($pos === false)) {
-                    $numaccno = substr($accno, $pos);
-                    //  $pref = substr($accno, 0, $pos);
-                    $endpos = firstnonnum($numaccno);
-					$nonnum  = "";
-                    if (!($endpos === false)) {
-                        $nonnum = str_replace(' ', '', substr($numaccno, $endpos));
-                        $numaccno = substr($numaccno, 0, $endpos);
+                case 'Torino':
+                    /*                     * ***********************TORINO */
+                    $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
+                    $pos = firstnum($accno);
+                    if (!($pos === false)) {
+                        $numaccno = substr($accno, $pos);
+                        //  $pref = substr($accno, 0, $pos);
+                        $endpos = firstnonnum($numaccno);
+                        $nonnum = "";
+                        if (!($endpos === false)) {
+                            $nonnum = str_replace(' ', '', substr($numaccno, $endpos));
+                            $numaccno = substr($numaccno, 0, $endpos);
+                        }
                     }
-                }
 
-                if (stripos($accno, 'S') !== false) {
-                    $accno = "inventoryNumber=S. " . $numaccno . $nonnum;
-                }elseif (stripos($accno, 'prov') !== false) {
-                    $accno = "inventoryNumber=Provv. " . $numaccno . $nonnum;
-                }elseif (stripos($accno, 'CG') !== false) {
-                    $accno = "cgt=" .  $numaccno . $nonnum;
-                }elseif (stripos($accno, 'C') !== false) {
-                    $accno = "inventoryNumber=Cat. " . $numaccno . $nonnum;
-                }else{
-				 $accno = "inventoryNumber=" . $accno;
-				}
-break;				
+                    if (stripos($accno, 'S') !== false) {
+                        $accno = "inventoryNumber=S. " . $numaccno . $nonnum;
+                    } elseif (stripos($accno, 'prov') !== false) {
+                        $accno = "inventoryNumber=Provv. " . $numaccno . $nonnum;
+                    } elseif (stripos($accno, 'CG') !== false) {
+                        $accno = "cgt=" . $numaccno . $nonnum;
+                    } elseif (stripos($accno, 'C') !== false) {
+                        $accno = "inventoryNumber=Cat. " . $numaccno . $nonnum;
+                    } else {
+                        $accno = "inventoryNumber=" . $accno;
+                    }
+                    break;
                 case 'Philadelphia':
                     $accno = preg_replace('~[ .]~', '', $accno);
                     break;
@@ -918,4 +951,43 @@ break;
                             foreach ($sortedarray as &$musdef) {
                                 ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
                         </select></td></tr><tr><td align='right'>Inventory number:</td><td align='left'><input type='text' name='no' id='no' style='max-width: 202px; min-width: 202px; width: 202px !important; height: 19px !important; min-height: 19px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;' >
-                    </td><tr><td align='right'>&nbsp;</td><td align='left'><input type='submit' value='Search'></td></tr></table> </form><p>&nbsp;</p><p><a href='./mus.php?help=help'>List of online museum catalogues and information about this tool</a>&nbsp;|&nbsp;<a href='./mus.php?help=impressum'>Impressum</a></p></body></html>
+                    </td><tr><td align='right'>&nbsp;</td><td align='left'><input type='submit' value='Search'></td></tr></table> </form><p>&nbsp;</p><p>
+            You can also try the <a href="javascript:void%20function(){function%20a(b,c){var%20d=document.createElement(%22a%22);d.style.display=%22none%22,h.appendChild(d),c%3Fd.target=%22_blank%22:d.setAttribute(%22download%22,%22download.jpg%22),d.href=b,d.click(),h.removeChild(d)}function%20c(b,c,d,e,f){var%20g=c;new%20Set(b.match(g)).forEach(function(b){var%20c=g.exec(b);g.lastIndex=0,a(d+c[1].replace(/%26amp;/g,%22%26%22)+e,f)})}var%20d,e,f,g=window.location.href,h=document.body;if(/britishmuseum\.org/.test(g)){var%20b=/\/mid_(\d*)_(\d*).jpg/gm;new%20Set(h.innerHTML.match(b)).forEach(function(c){d=b.exec(c),b.lastIndex=0,a(%22/api/_image-download%3Fid=%22+%20+d[1].concat(d[2]),0)})}else%20if(/brooklynmuseum\.org/.test(g))c(h.innerHTML,/data-full-img-url=%22(.*)%22/gm,%22%22,%22%22,!0);else%20if(/mfa\.org/.test(g)){var%20b=/(\/internal.*%3F3Aformat%253D)postage/gm;b.test(h.innerHTML)%3Fc(h.innerHTML,b,%22%22,%22full%22,0):a(document.getElementsByName(%22og:image%22)[0].getAttribute(%22content%22),0)}else%20if(/louvre\.fr/.test(g))c(h.innerHTML,/data-api-dl=%22(.*%3F)%22/gm,%22%22,%22%22,0);else%20if(/rmo\.nl/.test(g))c(h.innerHTML,/(\/imageproxy\/jpg\/.*%3F)%22/gm,%22%22,%22%22,0);else%20if(/petriecat\.museums\.ucl\.ac\.uk/.test(g)){var%20j=/maxphotos=(\d*)/gm.exec(h.innerHTML)[1];if(d=/object_images\/mid(\/.*%3F)1.jpg%22/gm.exec(h.innerHTML),1==j||null===d)c(h.innerHTML,/object_images\/mid(\/.*%3F.jpg)%22/gm,%22/object_images/full%22,%22%22);else%20for(e=1;e%3C=j;e+=1)a(%22/object_images/full%22+d[1]+e+%22.jpg%22,0)}else%20if(/metmuseum\.org/.test(g))c(h.innerHTML,/data-superjumboimage=%22(.*%3F)%22/gm,%22%22,%22%22,!0);else%20if(/museoegizio\.it/.test(g))c(h.innerHTML,/Download%20%3Ca%20href=%22(.*%3F)%22/gm,%22%22,%22%22,0);else%20if(/oi-idb\.uchicago\.edu/.test(g))c(h.innerHTML,/cycle-slideshow-image-container%22%20href=%22(.*%3F)%22/gm,%22%22,%22%22,!0);else%20if(/carmentis\.kmkg-mrah\.be/.test(g)){var%20b=/href=%22(.*%3F)%22%20data-fancybox=%22images/gm,k=document.getElementById(%22referenceTab-03%22);if(k.classList.contains(%22referenceTabItem%22)){f=k.getElementsByTagName(%22A%22)[0].getAttribute(%22href%22);var%20l=new%20XMLHttpRequest;l.onreadystatechange=function(){4===l.readyState%26%26200===l.status%26%26l.responseText%26%26c(l.responseText,b,%22%22,%22%22,0)},l.open(%22GET%22,f,!0),l.send(null)}else%20c(h.innerHTML,b,%22%22,%22%22,0)}else%20/harbour\.man\.ac\.uk/.test(g)%3Fc(h.innerHTML,/\%3Firn=(\d*)/gm,%22/emuweb/objects/common/webmedia.php%3Firn=%22,%22%22,0):/bible-orient-museum\.ch/.test(g)%26%26c(h.innerHTML,/background-image:%20url\((.*%3F)\)/gm,%22%22,%22%22,0)}();">
+                Museum Downloader</a> bookmarklet to facilitate downloading images from online catalogues.
+            <br> <a href="#popup1" tabindex="-1">Brief introduction to the bookmarklet.</a>
+
+        <div id="popup1" class="overlay">
+            <div class="popup">
+                <a class="close" href="#" tabindex="-1" >&times;</a>
+                <div class="content">
+                    <h2>Egyptological Museum Downloader Bookmarklet</h2>
+
+                    version 1.1 (28 October 2021)
+                    <br>
+                    The aim of this bookmarklet is to facilitate downloading images of Egyptian 
+                    objects from the websites of major museums. 
+                    <br>
+                    Usage:  <ol>
+                        <li>Click on the 'Museum Downloader' link on the main page and drag it to your browser’s bookmarks bar
+                            (also called 'favorites bar' in some browsers).</li>
+                        <li>Open an object page of an online museum catalogue, which contains images.</li>
+                        <li>Press the link 'Museum Downloader' on your bookmarks bar.</li>
+                        <li>Depending on the museum, the tool will attempt to either download all available images
+                            or open all images in new tabs. Your browser may ask if you allow the website to download multiple files 
+                            or to open multiple pop ups. If you do not allow, the bookmarklet does not 
+                            work. However, you only have to allow once, for each museum.</li>
+                        <li>Look in your downloads folder.</li> </ol>
+
+
+                    The bookmarklet downloads images from the British Museum, Boston Museum 
+                    of Fine Arts, Louvre, National Museum of Antiquities (Leiden), Petrie 
+                    Museum, Egyptian Museum (Turin), Royal Museums of Art and History 
+                    (Brussels), Manchester Museum, and Bible and Orient Museum (Fribourg).
+                    <br> 
+                    It opens all images in new tabs for the Brooklyn Museum, Metropolitan Museum, and 
+                    Oriental Institute Museum (Chicago).<br>
+                    <br> The bookmarklet was tested in Firefox, Chrome, and Edge under Microsoft Windows. It does not work in Internet Explorer. I have not tested it in macOS.
+                </div>
+            </div>
+        </div>
+    </p><p><a href='./mus.php?help=help'>List of online museum catalogues and information about this tool</a>&nbsp;|&nbsp;<a href='./mus.php?help=impressum'>Impressum</a></p></body></html>

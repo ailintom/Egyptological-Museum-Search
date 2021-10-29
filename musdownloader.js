@@ -1,6 +1,6 @@
 /*
  * Egyptological Museum Downloader Bookmarklet 
- * v. 1.0 (28 October 2021)
+ * v. 1.3 (29 October 2021)
  * 
  * The aim of this bookmarklet is to facilitate downloading images of Egyptian 
  * objects from the websites of major museums. 
@@ -20,7 +20,8 @@
  * The bookmarklet downloads images from the British Museum, the Boston Museum 
  * of Fine Arts, the Louvre, National Museum of Antiquities (Leiden), Petrie 
  * Museum, Egyptian Museum (Turin), Royal Museums of Art and History 
- * (Brussels), Manchester Museum, and the Bible and Orient Museum (Fribourg).
+ * (Brussels), Manchester Museum, National Museums Scotland (Edinburgh),
+ * and the Bible and Orient Museum (Fribourg).
  * 
  * It opens all images in new tabs for the Brooklyn Museum, Metropolitan Museum,
  * Oriental Institute Museum (Chicago).
@@ -59,25 +60,34 @@ function dl(url, target) {
     }
     a.href = url;
     a.click();
+
     b.removeChild(a);
 }
 
 function dlall(html, rein, pref, suff, target) {
     var re = rein;
-    new Set(html.match(re)).forEach(function (val) {
-        var m = re.exec(val);
-        re.lastIndex = 0;
-        dl(pref + m[1].replace(/&amp;/g, "&") + suff, target);
+    var s = new Set(html.match(re));
+    [...s].forEach(function (val, index) {
+        setTimeout(function () {
+            var m = re.exec(val);
+            re.lastIndex = 0;
+            dl(pref + m[1].replace(/&amp;/g, "&") + suff, target);
+        }, 120 * (index + 1));
     });
 }
-
 if (/britishmuseum\.org/.test(cu)) {
 
     var re = /\/mid_(\d*)_(\d*).jpg/gm;
-    new Set(b.innerHTML.match(re)).forEach(function (val) {
-        match = re.exec(val);
-        re.lastIndex = 0;
-        dl('/api/_image-download?id=' + Number(match[1].concat(match[2])), 0);
+
+    var s = new Set(b.innerHTML.match(re));
+    [...s].forEach(function (val, index) {
+
+        setTimeout(function () {
+            match = re.exec(val);
+            re.lastIndex = 0;
+            dl('/api/_image-download?id=' + Number(match[1].concat(match[2])), 0);
+        }, 120 * (index + 1));
+
     });
 } else if (/brooklynmuseum\.org/.test(cu)) {
     dlall(b.innerHTML, /data-full-img-url="(.*)"/gm, "", "", true);
@@ -86,7 +96,7 @@ if (/britishmuseum\.org/.test(cu)) {
     if (re.test(b.innerHTML)) {
         dlall(b.innerHTML, re, "", "full", 0);
     } else {
-        dl(document.getElementsByName("og:image")[0].getAttribute("content"),0);
+        dl(document.getElementsByName("og:image")[0].getAttribute("content"), 0);
         //dlall(document.head.innerHTML, /mfa\.org(\/.*?)" name="og:image/gm, "", "", 0);
     }
 } else if (/louvre\.fr/.test(cu)) {
@@ -131,4 +141,6 @@ if (/britishmuseum\.org/.test(cu)) {
     dlall(b.innerHTML, /\?irn=(\d*)/gm, "/emuweb/objects/common/webmedia.php?irn=", "", 0);
 } else if (/bible-orient-museum\.ch/.test(cu)) {
     dlall(b.innerHTML, /background-image: url\((.*?)\)/gm, "", "", 0);
+} else if (/nms.ac\.uk/.test(cu)) {
+    dlall(b.innerHTML, /data-zoom-image="(.*?)"/gm, "", "", 0);
 }

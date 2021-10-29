@@ -1,6 +1,6 @@
 /*
  * Egyptological Museum Downloader Bookmarklet 
- * v. 1.3 (29 October 2021)
+ * v. 1.4 (29 October 2021)
  * 
  * The aim of this bookmarklet is to facilitate downloading images of Egyptian 
  * objects from the websites of major museums. 
@@ -48,7 +48,7 @@
  * SOFTWARE.
  */
 
-var cu = window.location.href, b = document.body, match, i, url;
+var cu = window.location.href, x1 = new XMLHttpRequest(), b = document.body, match, i, url;
 function dl(url, target) {
     var a = document.createElement('a');
     a.style.display = 'none';
@@ -76,19 +76,22 @@ function dlall(html, rein, pref, suff, target) {
     });
 }
 if (/britishmuseum\.org/.test(cu)) {
+    url = cu.replace(/.*\//gm, "/api/_object?id=");
+    x1.onreadystatechange = function () {
+        if (x1.readyState === 4 && x1.status === 200) {
+            if (x1.responseText) {
+                var js = JSON.parse(x1.responseText);
+                js['hits']['hits'][0]['_source']['multimedia'].forEach(function (item, index) {
+                    setTimeout(function () {
+                        dl('/api/_image-download?id=' + item['admin']['id'], 0);
+                    }, 120 * (index + 1));
+                });
+            }
+        }
+    };
+    x1.open("GET", url, true);
+    x1.send(null);
 
-    var re = /\/mid_(\d*)_(\d*).jpg/gm;
-
-    var s = new Set(b.innerHTML.match(re));
-    [...s].forEach(function (val, index) {
-
-        setTimeout(function () {
-            match = re.exec(val);
-            re.lastIndex = 0;
-            dl('/api/_image-download?id=' + Number(match[1].concat(match[2])), 0);
-        }, 120 * (index + 1));
-
-    });
 } else if (/brooklynmuseum\.org/.test(cu)) {
     dlall(b.innerHTML, /data-full-img-url="(.*)"/gm, "", "", true);
 } else if (/mfa\.org/.test(cu)) {
@@ -124,7 +127,7 @@ if (/britishmuseum\.org/.test(cu)) {
     var pl = document.getElementById("referenceTab-03");
     if (pl.classList.contains("referenceTabItem")) {
         url = pl.getElementsByTagName('A')[0].getAttribute('href');
-        var x1 = new XMLHttpRequest();
+
         x1.onreadystatechange = function () {
             if (x1.readyState === 4 && x1.status === 200) {
                 if (x1.responseText) {

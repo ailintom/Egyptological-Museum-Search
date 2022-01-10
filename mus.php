@@ -725,7 +725,7 @@ foreach ($musarray as &$musdef) {
             }
         } else {
             /*             * ***********************OTHER MUSEUMS */
-            if (in_array($musdef[0], array("Stockholm", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester", "Swansea", "UC", "Warszawa"))) {
+            if (in_array($musdef[0], array("Stockholm", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester", "Swansea",  "Warszawa"))) {
                 $protocol = "http";
             } else {
                 $protocol = "https";

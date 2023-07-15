@@ -32,6 +32,7 @@
  * * Added Bristol
  *  *  Version 0.9: 23.04.2019
  * * Added Berlin
+ * Version 0.9.1: 15.07.2023 updated Edinburgh, Louvre, and other museums
  * 
  * 
  * This php script should be used as follows:
@@ -84,7 +85,17 @@ function firstnum($text) {
 }
 
 function showcss() {
-    ?> <style type="text/css"> .limit {max-width: 720px; } html, body {font-family: sans-serif; font-size: 16px; } td {padding-top: 9px; padding-bottom: 9px; } 
+    ?> <style type="text/css"> .limit {
+            max-width: 720px;
+        }
+        html, body {
+            font-family: sans-serif;
+            font-size: 16px;
+        }
+        td {
+            padding-top: 9px;
+            padding-bottom: 9px;
+        }
         .overlay {
             position: fixed;
             top: 0;
@@ -624,16 +635,6 @@ foreach ($musarray as &$musdef) {
                     exit();
                 }
                 ReturnResults($result, $musdef[1], $musdef[2], $mus);
-            } elseif ($musdef[0] == 'Edinburgh') {
-                /*                 * ***********************Edinburgh */
-                $accno = str_replace(' ', '.', $accno);
-                $accno = str_replace('  ', ' ', $accno);
-                if (is_numeric(substr($accno, 0, 1))) {
-                    $accno = 'A.' . $accno; // This is Egyptology-specific. ("A" is used for all Egyptian [and possibly other] items in Edinburgh).
-                }
-                $url1 = "https://www.nms.ac.uk/explore-our-collections/collection-search-results/?mode=standard&amp;key=object_number&amp;term=$accno";
-                $url2 = "http://nms.scran.ac.uk/database/results.php?query1=%22$accno%22&amp;bool1=AND&amp;query2=&amp;bool2=AND&amp;query3=&amp;FULL=1&amp;_IXSPFX_=z&amp;sortby=title&amp;sortorder=ASC&amp;mediatype=";
-                DualPage($url1, $url2);
             } elseif ($musdef[0] == 'Bruxelles') {
                 /*                 * ***********************BRUXELLES */
                 $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
@@ -725,7 +726,7 @@ foreach ($musarray as &$musdef) {
             }
         } else {
             /*             * ***********************OTHER MUSEUMS */
-            if (in_array($musdef[0], array("Stockholm", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester", "Swansea",  "Warszawa"))) {
+            if (in_array($musdef[0], array("Stockholm", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester", "Swansea", "Warszawa"))) {
                 $protocol = "http";
             } else {
                 $protocol = "https";
@@ -752,13 +753,19 @@ foreach ($musarray as &$musdef) {
                     }
                     break;
                 case 'Glasgow Hunterian':
-                    $accno = str_replace(' ', '.', $accno);
-                    if (preg_match("/^\D\d.*/", $accno)) {
-                        $accno = substr($accno, 0, 1) . "." . substr($accno, 1);
+                    $accno = mb_strtoupper(str_replace(' ', '.', $accno));
+                    if (mb_substr($accno, 0, 6) != 'GLAHM:') {
+
+                        if (preg_match("/^\D\d.*/", $accno)) {
+                            $accno = mb_substr($accno, 0, 1) . "." . substr($accno, 1);
+                        }
+                        if (preg_match("/^\d.*/", $accno)) {
+                            $accno = "D." . $accno;
+                        }
+                        $accno = 'GLAHM:' . $accno;
                     }
-                    if (preg_match("/^\d.*/", $accno)) {
-                        $accno = "D." . $accno;
-                    }
+                    //D.1921.35
+
                     break;
                 case 'Lyon':
                     $accno = str_replace('.', ' ', $accno);
@@ -903,6 +910,14 @@ foreach ($musarray as &$musdef) {
                             }
                         }
                     }
+                    break;
+                case "Edinburgh" :
+                    /*                     * ***********************Edinburgh */
+                    $accno = str_replace('  ', ' ', str_replace(' ', '.', $accno));
+                    if (is_numeric(substr($accno, 0, 1))) {
+                        $accno = 'A.' . $accno; // This is Egyptology-specific. ("A" is used for all Egyptian [and possibly other] items in Edinburgh).
+                    }
+
                     break;
                 case 'Sydney':
                     $accno = str_replace(' ', '', $accno);

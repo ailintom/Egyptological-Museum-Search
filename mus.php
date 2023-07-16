@@ -33,6 +33,7 @@
  *  *  Version 0.9: 23.04.2019
  * * Added Berlin
  * Version 0.9.1: 15.07.2023 updated Edinburgh, Louvre, and other museums
+ * Version 0.9.2: 16.07.2023 added Glasgow Burrell and Glasgow Kelvingrove
  * 
  * 
  * This php script should be used as follows:
@@ -836,6 +837,9 @@ foreach ($musarray as &$musdef) {
                         $accno = str_replace('a', 'а', str_replace('b', 'б', $accno));
                     }
                     break;
+
+                case 'Glasgow Burrell' :
+                case 'Glasgow Kelvingrove' :
                 case 'Field Museum' :
                     $pos = firstnum($accno);
                     $accno = substr($accno, $pos);

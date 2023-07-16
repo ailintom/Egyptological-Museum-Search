@@ -1,6 +1,6 @@
 /*
  * Egyptological Museum Downloader Bookmarklet 
- * v. 1.4 (29 October 2021)
+ * v. 1.5 (16 July 2023)
  * 
  * The aim of this bookmarklet is to facilitate downloading images of Egyptian 
  * objects from the websites of major museums. 
@@ -26,7 +26,7 @@
  * It opens all images in new tabs for the Brooklyn Museum, Metropolitan Museum,
  * Oriental Institute Museum (Chicago).
  * 
- * Copyright 2021 Alexander Ilin-Tomich
+ * Copyright 2023 Alexander Ilin-Tomich
  *
  ** Licensed under the MIT License. 
  * 
@@ -53,10 +53,11 @@ function dl(url, target) {
     var a = document.createElement('a');
     a.style.display = 'none';
     b.appendChild(a);
-    if (target) {
+    if (target === true) {
         a.target = "_blank";
     } else {
-        a.setAttribute('download', 'download.jpg');
+       var filename = (target && target.exec(b.innerHTML)) ? target.exec(b.innerHTML)[1].trim() : 'download';
+       a.setAttribute('download', filename + '.jpg');
     }
     a.href = url;
     a.click();
@@ -83,7 +84,7 @@ if (/britishmuseum\.org/.test(cu)) {
                 var js = JSON.parse(x1.responseText);
                 js['hits']['hits'][0]['_source']['multimedia'].forEach(function (item, index) {
                     setTimeout(function () {
-                        dl('/api/_image-download?id=' + item['admin']['id'], 0);
+                        dl('/api/_image-download?id=' + item['admin']['id'], /="object-detail__data-description">(.+?)</);
                     }, 120 * (index + 1));
                 });
             }
@@ -97,53 +98,45 @@ if (/britishmuseum\.org/.test(cu)) {
 } else if (/mfa\.org/.test(cu)) {
     var re = /(\/internal.*?3Aformat%3D)postage/gm;
     if (re.test(b.innerHTML)) {
-        dlall(b.innerHTML, re, "", "full", 0);
+        dlall(b.innerHTML, re, "", "full", /Accession Number<\/span><span class="detailFieldValue">(.+?)</);
     } else {
-        dl(document.getElementsByName("og:image")[0].getAttribute("content"), 0);
+        dl(document.getElementsByName("og:image")[0].getAttribute("content"), /Accession Number<\/span><span class="detailFieldValue">(.+?)</);
         //dlall(document.head.innerHTML, /mfa\.org(\/.*?)" name="og:image/gm, "", "", 0);
     }
 } else if (/louvre\.fr/.test(cu)) {
-    dlall(b.innerHTML, /data-api-dl="(.*?)"/gm, "", "", 0);
+    dlall(b.innerHTML, /data-api-dl="(.*?)"/gm, "", "", /Numéro principal\s+?:\s+?<\/span>(.+?)</);
 } else if (/rmo\.nl/.test(cu)) {
-    dlall(b.innerHTML, /(\/imageproxy\/jpg\/.*?)"/gm, "", "", 0);
-} else if (/petriecat\.museums\.ucl\.ac\.uk/.test(cu)) {
-    var maxphotos = /maxphotos=(\d*)/gm.exec(b.innerHTML)[1];
-    match = /object_images\/mid(\/.*?)1.jpg"/gm.exec(b.innerHTML);
-    if (maxphotos == 1 || match === null) {
-        dlall(b.innerHTML, /object_images\/mid(\/.*?.jpg)"/gm, "/object_images/full", "");
-    } else {
-        for (i = 1; i <= maxphotos; i += 1) {
-            dl("/object_images/full" + match[1] + i + '.jpg', 0);
-        }
-    }
+    dlall(b.innerHTML, /(\/imageproxy\/jpg\/.*?)"/gm, "", "", /Inventarisnummer:(.+?)</);
+} else if (/collections\.ucl\.ac\.uk/.test(cu)) {
+    dlall(b.innerHTML, /src="(.*?)&amp;width/gm, "", "", /Number<\/div><div class="value">LDUCE-(UC.+?)</);
 } else if (/metmuseum\.org/.test(cu)) {
     dlall(b.innerHTML, /data-superjumboimage="(.*?)"/gm, "", "", true);
 } else if (/museoegizio\.it/.test(cu)) {
-    dlall(b.innerHTML, /Download <a href="(.*?)"/gm, "", "", 0);
-} else if (/oi-idb\.uchicago\.edu/.test(cu)) {
+    dlall(b.innerHTML, /Download <a href="(.*?)"/gm, "", "", /col-lg-9">\s*?<span class="value">(.+)</);
+} else if (/isac-idb\.uchicago\.edu/.test(cu)) {
     dlall(b.innerHTML, /cycle-slideshow-image-container" href="(.*?)"/gm, "", "", true);
 } else if (/carmentis\.kmkg-mrah\.be/.test(cu)) {
     var re = /href="(.*?)" data-fancybox="images/gm;
     var pl = document.getElementById("referenceTab-03");
-    if (pl.classList.contains("referenceTabItem")) {
+    if (pl && pl.classList.contains("referenceTabItem")) {
         url = pl.getElementsByTagName('A')[0].getAttribute('href');
 
         x1.onreadystatechange = function () {
             if (x1.readyState === 4 && x1.status === 200) {
                 if (x1.responseText) {
-                    dlall(x1.responseText, re, "", "", 0);
+                    dlall(x1.responseText, re, "", "", /inv=(.+?)&/);
                 }
             }
         };
         x1.open("GET", url, true);
         x1.send(null);
     } else {
-        dlall(b.innerHTML, re, "", "", 0);
+        dlall(b.innerHTML, re, "", "", /inv=(.+?)&/);
     }
 } else if (/harbour\.man\.ac\.uk/.test(cu)) {
     dlall(b.innerHTML, /\?irn=(\d*)/gm, "/emuweb/objects/common/webmedia.php?irn=", "", 0);
 } else if (/bible-orient-museum\.ch/.test(cu)) {
     dlall(b.innerHTML, /background-image: url\((.*?)\)/gm, "", "", 0);
 } else if (/nms.ac\.uk/.test(cu)) {
-    dlall(b.innerHTML, /data-zoom-image="(.*?)"/gm, "", "", 0);
+    dlall(b.innerHTML, /data-zoom-image="(.*?)"/gm, "", "", /Museum reference<\/h3><p>(.+?)</);
 }

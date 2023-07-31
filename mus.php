@@ -470,37 +470,9 @@ if ($helpmode == "aliases") {
             ReturnResultsFromArray($mmaids, "www.metmuseum.org/art/collection/search/", "", $mus);
         }
     } elseif ($mus === 'Berlin') {
-        ?>
-    <html>
-        <head>
-            <title>Museum</title>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body >
-
-            <object type="text/html" data="http://www.smb-digital.de/eMuseumPlus?service=ExternalInterface&module=collection&moduleFunction=search" id="searchobj" width="20" height="20">
-                <!--[if lte IE 8]><iframe src='http://www.smb-digital.de/eMuseumPlus?service=ExternalInterface&module=collection&moduleFunction=search' id="searchobj" width='20' height='20' >&nbsp;
-                        </iframe><![endif]-->&nbsp;
-            </object>
-            <form action="http://www.smb-digital.de/eMuseumPlus" method="post"  id="trackform" name="trackform" enctype="multipart/form-data" target="_top">  
-                <input type="hidden" name="service" value="direct/1/SearchPage/search.searchForm"/>
-                <input type="hidden" name="sp" value="S2"/>
-                <input type="hidden" name="Form2" value="fullTextField,smartFieldText,smartFieldText$0,textfield,textfield$0,textfield$1,$ValidField,$ValidField$0,textfield$2,textfield$3"/>
-                <input type="hidden" name="smartFieldText" value="&#196;gyptisches Museum und Papyrussammlung" class="text"/>	
-                <input type="hidden" name="fullTextField" value="<?= $accno ?>"  class="text"/>	
-
-            </form>  
-            <script type="text/javascript">
-                document.getElementById('searchobj').onload = function () {
-                    document.getElementById('trackform').submit();
-                };
-            </script>
-
-        </body>
-    </html>
-    <?php
-    exit(0);
+         if (is_numeric(substr($accno, 0, 1))) {
+                        $accno = "ÄM " . $accno;
+         }
 } elseif ($mus === 'Fitzwilliam') {
     $accno = str_replace(" ", ".", $accno);
     $url = "http://data.fitzmuseum.cam.ac.uk/api/?query=ObjectNumber:" . $accno;

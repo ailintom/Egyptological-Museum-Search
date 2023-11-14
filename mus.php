@@ -35,6 +35,7 @@
  * Version 0.9.1: 15.07.2023 updated Edinburgh, Louvre, and other museums
  * Version 0.9.2: 16.07.2023 added Glasgow Burrell and Glasgow Kelvingrove
  * Version 0.9.3: 16.07.2023 temporarily removed the use of the BM SPARQL endpoint, because it is very slow
+ * Version 0.9.4: 14.11.2023 fixed Budapest, ISAC
  * 
  * 
  * This php script should be used as follows:
@@ -847,7 +848,7 @@ foreach ($musarray as &$musdef) {
                 case 'Wien': //remove all but the digits
                     $accno = preg_replace('~[^0-9]~', '', $accno);
                     break;
-                case 'OIM':
+                case 'Chicago ISAC':
                     if (preg_match("/e/i", substr($accno, 0, 1))) {
                         $pos = firstnum($accno);
                         if (!($pos === false)) {

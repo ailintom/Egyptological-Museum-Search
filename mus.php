@@ -32,6 +32,10 @@
  * * Added Bristol
  *  *  Version 0.9: 23.04.2019
  * * Added Berlin
+ * Version 0.9.1: 15.07.2023 updated Edinburgh, Louvre, and other museums
+ * Version 0.9.2: 16.07.2023 added Glasgow Burrell and Glasgow Kelvingrove
+ * Version 0.9.3: 16.07.2023 temporarily removed the use of the BM SPARQL endpoint, because it is very slow
+ * Version 0.9.4: 14.11.2023 fixed Budapest, ISAC
  * 
  * 
  * This php script should be used as follows:
@@ -84,7 +88,17 @@ function firstnum($text) {
 }
 
 function showcss() {
-    ?> <style type="text/css"> .limit {max-width: 720px; } html, body {font-family: sans-serif; font-size: 16px; } td {padding-top: 9px; padding-bottom: 9px; } 
+    ?> <style type="text/css"> .limit {
+            max-width: 720px;
+        }
+        html, body {
+            font-family: sans-serif;
+            font-size: 16px;
+        }
+        td {
+            padding-top: 9px;
+            padding-bottom: 9px;
+        }
         .overlay {
             position: fixed;
             top: 0;
@@ -457,336 +471,184 @@ if ($helpmode == "aliases") {
             ReturnResultsFromArray($mmaids, "www.metmuseum.org/art/collection/search/", "", $mus);
         }
     } elseif ($mus === 'Berlin') {
-        ?>
-    <html>
-        <head>
-            <title>Museum</title>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body >
-
-            <object type="text/html" data="http://www.smb-digital.de/eMuseumPlus?service=ExternalInterface&module=collection&moduleFunction=search" id="searchobj" width="20" height="20">
-                <!--[if lte IE 8]><iframe src='http://www.smb-digital.de/eMuseumPlus?service=ExternalInterface&module=collection&moduleFunction=search' id="searchobj" width='20' height='20' >&nbsp;
-                        </iframe><![endif]-->&nbsp;
-            </object>
-            <form action="http://www.smb-digital.de/eMuseumPlus" method="post"  id="trackform" name="trackform" enctype="multipart/form-data" target="_top">  
-                <input type="hidden" name="service" value="direct/1/SearchPage/search.searchForm"/>
-                <input type="hidden" name="sp" value="S2"/>
-                <input type="hidden" name="Form2" value="fullTextField,smartFieldText,smartFieldText$0,textfield,textfield$0,textfield$1,$ValidField,$ValidField$0,textfield$2,textfield$3"/>
-                <input type="hidden" name="smartFieldText" value="&#196;gyptisches Museum und Papyrussammlung" class="text"/>	
-                <input type="hidden" name="fullTextField" value="<?= $accno ?>"  class="text"/>	
-
-            </form>  
-            <script type="text/javascript">
-                document.getElementById('searchobj').onload = function () {
-                    document.getElementById('trackform').submit();
-                };
-            </script>
-
-        </body>
-    </html>
-    <?php
-    exit(0);
-} elseif ($mus === 'Fitzwilliam') {
-    $accno = str_replace(" ", ".", $accno);
-    $url = "http://data.fitzmuseum.cam.ac.uk/api/?query=ObjectNumber:" . $accno;
-    $Fitzjson = json_decode(downloadmusjson($url), true);
-    if ($Fitzjson["total"] > 0) {
-        $webid = $Fitzjson["results"];
-        foreach ($webid as &$searchres) {
-            if (($searchres['ObjectNumber'] == $accno) or preg_match("/" . preg_quote($accno) . "\D.*/", $searchres['ObjectNumber'])) {
-
-                $mmaids[] = array($searchres['priref'], $searchres['ObjectNumber']);
-            }
+        if (is_numeric(substr($accno, 0, 1))) {
+            $accno = "ÄM " . $accno;
         }
-        if (count($mmaids) == 0) {
+    } elseif ($mus === 'Fitzwilliam') {
+        $accno = str_replace(" ", ".", $accno);
+        $url = "http://data.fitzmuseum.cam.ac.uk/api/?query=ObjectNumber:" . $accno;
+        $Fitzjson = json_decode(downloadmusjson($url), true);
+        if ($Fitzjson["total"] > 0) {
+            $webid = $Fitzjson["results"];
             foreach ($webid as &$searchres) {
-                $mmaids[] = array($searchres['priref'], $searchres['ObjectNumber']);
+                if (($searchres['ObjectNumber'] == $accno) or preg_match("/" . preg_quote($accno) . "\D.*/", $searchres['ObjectNumber'])) {
+
+                    $mmaids[] = array($searchres['priref'], $searchres['ObjectNumber']);
+                }
+            }
+            if (count($mmaids) == 0) {
+                foreach ($webid as &$searchres) {
+                    $mmaids[] = array($searchres['priref'], $searchres['ObjectNumber']);
+                }
+            }
+            if (count($mmaids) > 0) {
+                ReturnResultsFromArray($mmaids, "data.fitzmuseum.cam.ac.uk/id/object/", "", $mus);
             }
         }
-        if (count($mmaids) > 0) {
-            ReturnResultsFromArray($mmaids, "data.fitzmuseum.cam.ac.uk/id/object/", "", $mus);
-        }
     }
-}
 //The procedure looks for the matching museum definition in $musarray
-foreach ($musarray as &$musdef) {
-    if ($musdef[3] === true) {
-        $match = strcasecmp($mus, $musdef[0]) == 0;
-    } else {
-        $match = stripos($mus, $musdef[0]) !== false;
-    }
-    if ($match == true) {
-        $found = true;
-        if ($musdef[5] == true) {
-            /** if ($musdef[0] == 'OIM') { */
-            /*             * *********************** OIM  */
-            /**   $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
-              $pos = firstnum($accno);
-              if (!($pos === false)) { // the procedure replaces the searched OIM number into "E" + the numerical part. This is Egyptology-specific. ("E" is for Egyptian collection in OIM).
-              $accno = "E" . substr($accno, $pos);
-              }
-              $url = "https://oisolr.uchicago.edu/solr/oidbcatalogue/search-museum-collection/?&q=SrchRegisNumber:(" . str_replace(" ", "%20", $accno) . ")&facet=true&facet.mincount=1&fq=&facet.sort=count&sort=score%20desc&rows=50&start=0&wt=json";
-              $OIMraw = trim(downloadmusjson($url));
-              if ((strpos($OIMraw, 'docs') === false) or ( strpos($OIMraw, '"numFound":0') !== false)) { // Nothing found or false result
-              $url = "http://" . $musdef[6];
-              RedirUrl($url);
-              exit();
-              }
-              $OIMjson = json_decode(substr($OIMraw, 4, -1), true);
-              $webid = $OIMjson["response"]["docs"];
-              $mmaids = array();
-              foreach ($webid as &$searchres) {
-              $mmaids[] = array($searchres['irn'], $searchres['RegistrationNumber'][0]);
-              }
-              if (count($mmaids) > 0) {
-              ReturnResultsFromArray($mmaids, $musdef[1], $musdef[2], $mus);
-              }
-              } else */ if ($musdef[0] == 'BM') {
-                /*                 * ***********************BM */
-                // In the following line the script loads JSON with search results for "EA" + the digits contained in the searched acc. no. This is Egyptology-specific. ("EA is for Egyptian collection in BM).
-                $acc = preg_replace("/[^0-9]/", "", $accno);
-                $bmdata = "PREFIX owl: <http://www.w3.org/2002/07/owl#> SELECT ?webidval WHERE { ?auth owl:sameAs <http://collection.britishmuseum.org/id/object/Y_EA" . $acc . "> .   ?auth owl:sameAs ?webidval .   FILTER (?webidval != <http://collection.britishmuseum.org/id/object/Y_EA" . $acc . ">) }";
-                $BMjson = json_decode(downloadmusjsonpost("https://collection.britishmuseum.org/sparql", $bmdata), true);
+    foreach ($musarray as &$musdef) {
+        if ($musdef[3] === true) {
+            $match = strcasecmp($mus, $musdef[0]) == 0;
+        } else {
+            $match = stripos($mus, $musdef[0]) !== false;
+        }
+        if ($match == true) {
+            $found = true;
+            if ($musdef[5] == true) {
+                /** if ($musdef[0] == 'OIM') { */
+                /*                 * *********************** OIM  */
+                /**   $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
+                  $pos = firstnum($accno);
+                  if (!($pos === false)) { // the procedure replaces the searched OIM number into "E" + the numerical part. This is Egyptology-specific. ("E" is for Egyptian collection in OIM).
+                  $accno = "E" . substr($accno, $pos);
+                  }
+                  $url = "https://oisolr.uchicago.edu/solr/oidbcatalogue/search-museum-collection/?&q=SrchRegisNumber:(" . str_replace(" ", "%20", $accno) . ")&facet=true&facet.mincount=1&fq=&facet.sort=count&sort=score%20desc&rows=50&start=0&wt=json";
+                  $OIMraw = trim(downloadmusjson($url));
+                  if ((strpos($OIMraw, 'docs') === false) or ( strpos($OIMraw, '"numFound":0') !== false)) { // Nothing found or false result
+                  $url = "http://" . $musdef[6];
+                  RedirUrl($url);
+                  exit();
+                  }
+                  $OIMjson = json_decode(substr($OIMraw, 4, -1), true);
+                  $webid = $OIMjson["response"]["docs"];
+                  $mmaids = array();
+                  foreach ($webid as &$searchres) {
+                  $mmaids[] = array($searchres['irn'], $searchres['RegistrationNumber'][0]);
+                  }
+                  if (count($mmaids) > 0) {
+                  ReturnResultsFromArray($mmaids, $musdef[1], $musdef[2], $mus);
+                  }
+                  } else */
+                /** if ($musdef[0] == 'BM') {
+                  //*                 * ***********************BM
+                  // In the following line the script loads JSON with search results for "EA" + the digits contained in the searched acc. no. This is Egyptology-specific. ("EA is for Egyptian collection in BM).
+                  $acc = preg_replace("/[^0-9]/", "", $accno);
+                  $bmdata = "PREFIX owl: <http://www.w3.org/2002/07/owl#> SELECT ?webidval WHERE { ?auth owl:sameAs <http://collection.britishmuseum.org/id/object/Y_EA" . $acc . "> .   ?auth owl:sameAs ?webidval .   FILTER (?webidval != <http://collection.britishmuseum.org/id/object/Y_EA" . $acc . ">) }";
+                  $BMjson = json_decode(downloadmusjsonpost("https://collection.britishmuseum.org/sparql", $bmdata), true);
 
-                $webid = substr($BMjson["results"]["bindings"][0]["webidval"]["value"], 46);
-                if ($webid == null) {
+                  $webid = substr($BMjson["results"]["bindings"][0]["webidval"]["value"], 46);
+                  if ($webid == null) {
 
-                    $url = "https://" . $musdef[6] . 'EA' . preg_replace("/[^0-9]/", "", $accno);
-                    RedirUrl($url);
-                    exit();
-                }  //uncomment when SPARQL is working again
-                $url = "https://" . $musdef[1] . $webid . "&?museumno=" . $acc . $musdef[2];
-                RedirUrl($url);
-            } elseif ($musdef[0] == 'Leiden') {
-                /*                 * *********************** LEIDEN */
-                $accno = str_ireplace('Æ', 'AE', $accno);
-                if (preg_match("/^[^0-9 .][^0-9 .][^0-9 .]\d.*/", $accno)) {
-                    $accno = substr($accno, 0, 2) . " " . substr($accno, 2);
-                }
-                if (preg_match("/^[^0-9 .][^0-9 .]\d.*/", $accno)) {
-                    $accno = substr($accno, 0, 2) . " " . substr($accno, 2);
-                }
-                if (preg_match("/^[^0-9 .]\d.*/", $accno)) {
-                    $accno = substr($accno, 0, 1) . " " . substr($accno, 1);
-                }
-                $accno = str_replace(' ', '.', $accno);
-                $accno = str_replace('..', '.', $accno);
-                $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') = ", $accno);
-                if ($result->num_rows === 0) {
-                    if (strpos($accno, '/') !== false and substr($accno, 0, 1) !== "F" and substr($accno, 0, 1) !== "f") {
-
-                        $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') = ", "F." . $accno);
+                  $url = "https://" . $musdef[6] . 'EA' . preg_replace("/[^0-9]/", "", $accno);
+                  RedirUrl($url);
+                  exit();
+                  }  //uncomment when SPARQL is working again
+                  $url = "https://" . $musdef[1] . $webid . "&?museumno=" . $acc . $musdef[2];
+                  RedirUrl($url);
+                  } else */
+                if ($musdef[0] == 'Leiden') {
+                    /*                     * *********************** LEIDEN */
+                    $accno = str_ireplace('Æ', 'AE', $accno);
+                    if (preg_match("/^[^0-9 .][^0-9 .][^0-9 .]\d.*/", $accno)) {
+                        $accno = substr($accno, 0, 2) . " " . substr($accno, 2);
                     }
-                }
-                if ($result->num_rows === 0) {
-
-                    $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') like ", "$accno-%");
-                }
-                if ($result->num_rows === 0) {
-
-                    $result = mySQLqueryex($musdef[0], "REPLACE(REPLACE(inv, ' ', ''),'.','') like ", str_replace('.', '', $accno));
-                }
-                if ($result->num_rows === 0) {
-                    if (stripos($accno, 'bis') !== false) {
-                        $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') like ", str_ireplace('bis', '%bis%', $accno));
+                    if (preg_match("/^[^0-9 .][^0-9 .]\d.*/", $accno)) {
+                        $accno = substr($accno, 0, 2) . " " . substr($accno, 2);
                     }
-                }
-                // This is Egyptology-specific. (Leemans Numbers refer to a catalogue of the Egyptian collection).
-                if ($result->num_rows === 0) {
-                    $result = mySQLqueryex('Leiden (Leemans)', "REPLACE(inv, ' ', '.') = ", $accno);
-                }
-                if ($result->num_rows === 0) {
-                    $url = "https://" . $musdef[6] . $accno;
+                    if (preg_match("/^[^0-9 .]\d.*/", $accno)) {
+                        $accno = substr($accno, 0, 1) . " " . substr($accno, 1);
+                    }
+                    $accno = str_replace(' ', '.', $accno);
+                    $accno = str_replace('..', '.', $accno);
+                    $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') = ", $accno);
+                    if ($result->num_rows === 0) {
+                        if (strpos($accno, '/') !== false and substr($accno, 0, 1) !== "F" and substr($accno, 0, 1) !== "f") {
+
+                            $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') = ", "F." . $accno);
+                        }
+                    }
+                    if ($result->num_rows === 0) {
+
+                        $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') like ", "$accno-%");
+                    }
+                    if ($result->num_rows === 0) {
+
+                        $result = mySQLqueryex($musdef[0], "REPLACE(REPLACE(inv, ' ', ''),'.','') like ", str_replace('.', '', $accno));
+                    }
+                    if ($result->num_rows === 0) {
+                        if (stripos($accno, 'bis') !== false) {
+                            $result = mySQLqueryex($musdef[0], "REPLACE(inv, ' ', '.') like ", str_ireplace('bis', '%bis%', $accno));
+                        }
+                    }
+                    // This is Egyptology-specific. (Leemans Numbers refer to a catalogue of the Egyptian collection).
+                    if ($result->num_rows === 0) {
+                        $result = mySQLqueryex('Leiden (Leemans)', "REPLACE(inv, ' ', '.') = ", $accno);
+                    }
+                    if ($result->num_rows === 0) {
+                        $url = "https://" . $musdef[6] . $accno;
+                        RedirUrl($url);
+                        exit();
+                    }
+                    if ($result->num_rows > 1) {
+                        ReturnResults($result, $musdef[1], $musdef[2], $mus);
+                    }
+                    $webid = $result->fetch_assoc();
+
+                    $url = "https://" . $musdef[1] . $webid["webid"] . $musdef[2];
                     RedirUrl($url);
-                    exit();
-                }
-                if ($result->num_rows > 1) {
+                } elseif ($musdef[0] == 'Jerusalem') {
+                    /*                     * ***********************JERUSALEM */
+                    /* $accno = str_replace(' ', '.', $accno); */
+                    $accno = str_replace('..', '.', $accno);
+                    $accno = str_replace('  ', ' ', $accno);
+                    $result = mySQLqueryex($musdef[0], "inv = ", $accno);
+                    if ($result->num_rows === 0) {
+                        $result = mySQLqueryex($musdef[0], "inv like ", "%$accno%");
+                    }
+                    if ($result->num_rows === 0) {
+                        $url = 'http://' . $musdef[6] . '%22' . $accno . '%22';
+                        RedirUrl($url);
+                        exit();
+                    }
                     ReturnResults($result, $musdef[1], $musdef[2], $mus);
-                }
-                $webid = $result->fetch_assoc();
-
-                $url = "https://" . $musdef[1] . $webid["webid"] . $musdef[2];
-                RedirUrl($url);
-            } elseif ($musdef[0] == 'Jerusalem') {
-                /*                 * ***********************JERUSALEM */
-                /* $accno = str_replace(' ', '.', $accno); */
-                $accno = str_replace('..', '.', $accno);
-                $accno = str_replace('  ', ' ', $accno);
-                $result = mySQLqueryex($musdef[0], "inv = ", $accno);
-                if ($result->num_rows === 0) {
-                    $result = mySQLqueryex($musdef[0], "inv like ", "%$accno%");
-                }
-                if ($result->num_rows === 0) {
-                    $url = 'http://' . $musdef[6] . '%22' . $accno . '%22';
-                    RedirUrl($url);
-                    exit();
-                }
-                ReturnResults($result, $musdef[1], $musdef[2], $mus);
-            } elseif ($musdef[0] == 'Edinburgh') {
-                /*                 * ***********************Edinburgh */
-                $accno = str_replace(' ', '.', $accno);
-                $accno = str_replace('  ', ' ', $accno);
-                if (is_numeric(substr($accno, 0, 1))) {
-                    $accno = 'A.' . $accno; // This is Egyptology-specific. ("A" is used for all Egyptian [and possibly other] items in Edinburgh).
-                }
-                $url1 = "https://www.nms.ac.uk/explore-our-collections/collection-search-results/?mode=standard&amp;key=object_number&amp;term=$accno";
-                $url2 = "http://nms.scran.ac.uk/database/results.php?query1=%22$accno%22&amp;bool1=AND&amp;query2=&amp;bool2=AND&amp;query3=&amp;FULL=1&amp;_IXSPFX_=z&amp;sortby=title&amp;sortorder=ASC&amp;mediatype=";
-                DualPage($url1, $url2);
-            } elseif ($musdef[0] == 'Bruxelles') {
-                /*                 * ***********************BRUXELLES */
-                $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
-                $pos = firstnum($accno);
-                if ($pos === false) {
-                    $url = "http://" . $musdef[6] . $accno;
-                    RedirUrl($url);
-                }
-                $accno = substr($accno, $pos);
-                $endpos = firstnonnum($accno);
-                if ($endpos === false) {
-                    $num = $accno;
-                    $nonnum = "";
-                } else {
-                    $num = substr($accno, 0, $endpos);
-                    $nonnum = substr($accno, $endpos);
-                }
-                $numstr = "E." . sprintf("%05d", $num); // This is Egyptology-specific. ("E" is for Egyptian collection in Bruxelles).
-
-                $result = mySQLqueryex($musdef[0], "inv =", $numstr . $nonnum);
-                if ($result->num_rows === 0) {
-                    $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr . $nonnum . "%");
-                }
-                if ($result->num_rows === 0) {
-                    $nonnumrep = str_replace('.', '%', str_replace(' ', '%', $nonnum));
-                    $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr . $nonnumrep . "%");
-                }
-                if ($result->num_rows === 0) {
-                    $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr . "%");
-                }
-                if ($result->num_rows === 0) {
-                    $url = "http://" . $musdef[6];
-                    RedirUrl($url);
-                    exit();
-                }
-                ReturnResults($result, $musdef[1], $musdef[2], $mus);
-            } elseif ($musdef[0] == 'Torino') {
-                /*                 * ***********************TORINO */
-                $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
-                $pos = firstnum($accno);
-                if (!($pos === false)) {
-                    $numaccno = substr($accno, $pos);
-                    //  $pref = substr($accno, 0, $pos);
-                    $endpos = firstnonnum($numaccno);
-                    if (!($endpos === false)) {
-                        $nonnum = str_replace(' ', '', substr($numaccno, $endpos));
-                        $numaccno = substr($numaccno, 0, $endpos);
+                } elseif ($musdef[0] == 'Bruxelles') {
+                    /*                     * ***********************BRUXELLES */
+                    $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
+                    $pos = firstnum($accno);
+                    if ($pos === false) {
+                        $url = "http://" . $musdef[6] . $accno;
+                        RedirUrl($url);
                     }
-                }
-
-                if (stripos($accno, 'S') !== false) {
-                    $accno = "S. " . sprintf("%05d", $numaccno) . $nonnum;
-                }
-                if (stripos($accno, 'prov') !== false) {
-                    $accno = "Provv. " . sprintf("%04d", $numaccno) . $nonnum;
-                }
-                if (stripos($accno, 'CG') !== false) {
-                    $accno = "CGT " . sprintf("%05d", $numaccno) . $nonnum;
-                }
-                if (stripos($accno, 'C') !== false) {
-                    $accno = "Cat. " . sprintf("%04d", $numaccno) . $nonnum;
-                }
-
-                $result = mySQLqueryex($musdef[0], 'inv =', $accno);
-                if ($result->num_rows === 0 and preg_match("/.*\/.*/", $accno)) {
-                    if (preg_match("/^\d.*/", $accno)) {
-                        $result = mySQLqueryex($musdef[0], 'inv like ', '%' . str_replace("/", "/%", $numaccno . $nonnum));
+                    $accno = substr($accno, $pos);
+                    $endpos = firstnonnum($accno);
+                    if ($endpos === false) {
+                        $num = $accno;
+                        $nonnum = "";
                     } else {
-                        $result = mySQLqueryex($musdef[0], 'inv like ', str_replace("/", "/%", $accno));
+                        $num = substr($accno, 0, $endpos);
+                        $nonnum = substr($accno, $endpos);
                     }
-                }
-                if ($result->num_rows === 0) {
+                    $numstr = "E." . sprintf("%05d", $num); // This is Egyptology-specific. ("E" is for Egyptian collection in Bruxelles).
 
-                    if (!$numaccno == 0) {
-
-                        $result = mySQLqueryex($musdef[0], 'STRIP_NON_DIGIT(inv) =', $numaccno);
+                    $result = mySQLqueryex($musdef[0], "inv =", $numstr . $nonnum);
+                    if ($result->num_rows === 0) {
+                        $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr . $nonnum . "%");
+                    }
+                    if ($result->num_rows === 0) {
+                        $nonnumrep = str_replace('.', '%', str_replace(' ', '%', $nonnum));
+                        $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr . $nonnumrep . "%");
+                    }
+                    if ($result->num_rows === 0) {
+                        $result = mySQLqueryex($musdef[0], "inv LIKE", $numstr . "%");
                     }
                     if ($result->num_rows === 0) {
                         $url = "http://" . $musdef[6];
                         RedirUrl($url);
                         exit();
                     }
-                }
-                ReturnResults($result, $musdef[1], $musdef[2], $mus);
-            } else {
-                $url = "http://" . $musdef[1];
-                RedirUrl($url);
-                exit();
-            }
-        } else {
-            /*             * ***********************OTHER MUSEUMS */
-            if (in_array($musdef[0], array("Stockholm", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester", "Swansea",  "Warszawa"))) {
-                $protocol = "http";
-            } else {
-                $protocol = "https";
-            }
-
-            switch ($musdef[0]) {
-                case 'Genève':
-                    if (is_numeric($accno)) {
-                        $accno = sprintf("%06d", $accno);
-                    } elseif ((preg_match("/^\D\d.*/", $accno)) || (preg_match("/^\D.\d.*/", $accno))) {
-                        $pos = firstnum($accno);
-                        if (!($pos === false)) {
-                            $num = substr($accno, $pos);
-
-                            $endpos = firstnonnum($num);
-                            if (!($endpos === false)) {
-                                $num = substr($num, 0, $endpos);
-                                $nonnum = substr($num, $endpos);
-                            }
-                            if (!($pos === false)) {
-                                $accno = substr($accno, 0, 1) . " " . sprintf("%04d", $num) . $nonnum;
-                            }
-                        }
-                    }
-                    break;
-                case 'Glasgow Hunterian':
-                    $accno = str_replace(' ', '.', $accno);
-                    if (preg_match("/^\D\d.*/", $accno)) {
-                        $accno = substr($accno, 0, 1) . "." . substr($accno, 1);
-                    }
-                    if (preg_match("/^\d.*/", $accno)) {
-                        $accno = "D." . $accno;
-                    }
-                    break;
-                case 'Lyon':
-                    $accno = str_replace('.', ' ', $accno);
-                    if (preg_match("/^\D\d.*/", $accno)) {
-                        $accno = substr($accno, 0, 1) . " " . substr($accno, 1);
-                    }
-                    break;
-                case 'Allard Pierson':
-                    $accno = preg_replace('~[^0-9]~', '', $accno);
-                    if (is_numeric($accno)) {
-                        $accno = sprintf("%05d", $accno);
-                    }
-                    break;
-                case 'Walters':
-                case 'Boston':
-                case 'Brooklyn':
-                    $accno = preg_replace('/(\d)[-\s\/]+(?=\d)/', '$1.', $accno); // remove spaces and slashes between numbers
-                    if (preg_match("/^\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d$/", $accno) or preg_match("/^\d\d\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d\d\d$/", $accno) or preg_match("/^\d\d\d\d[^0-9.].*/", $accno) or preg_match("/^\d\d\d\d$/", $accno)) {
-                        $accno = substr($accno, 0, 2) . "." . substr($accno, 2);
-                    } elseif (preg_match("/^\d\d\d\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d\d\d\d$/", $accno) or preg_match("/^\d\d\d\d\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d\d\d\d\d$/", $accno)) {
-                        if (substr($accno, 0, 2) == 19 or substr($accno, 0, 2) == 20) {
-                            $accno = substr($accno, 0, 4) . "." . substr($accno, 3);
-                        } else {
-                            $accno = substr($accno, 0, 2) . "." . substr($accno, 2);
-                        }
-                    }
-                    break;
-                case 'Torino':
+                    ReturnResults($result, $musdef[1], $musdef[2], $mus);
+                } elseif ($musdef[0] == 'Torino') {
                     /*                     * ***********************TORINO */
                     $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
                     $pos = firstnum($accno);
@@ -794,7 +656,6 @@ foreach ($musarray as &$musdef) {
                         $numaccno = substr($accno, $pos);
                         //  $pref = substr($accno, 0, $pos);
                         $endpos = firstnonnum($numaccno);
-                        $nonnum = "";
                         if (!($endpos === false)) {
                             $nonnum = str_replace(' ', '', substr($numaccno, $endpos));
                             $numaccno = substr($numaccno, 0, $endpos);
@@ -802,137 +663,284 @@ foreach ($musarray as &$musdef) {
                     }
 
                     if (stripos($accno, 'S') !== false) {
-                        $accno = "inventoryNumber=S. " . $numaccno . $nonnum;
-                    } elseif (stripos($accno, 'prov') !== false) {
-                        $accno = "inventoryNumber=Provv. " . $numaccno . $nonnum;
-                    } elseif (stripos($accno, 'CG') !== false) {
-                        $accno = "cgt=" . $numaccno . $nonnum;
-                    } elseif (stripos($accno, 'C') !== false) {
-                        $accno = "inventoryNumber=Cat. " . $numaccno . $nonnum;
-                    } else {
-                        $accno = "inventoryNumber=" . $accno;
+                        $accno = "S. " . sprintf("%05d", $numaccno) . $nonnum;
                     }
-                    break;
-                case 'Philadelphia':
-                    $accno = preg_replace('~[ .]~', '', $accno);
-                    break;
-                case 'Liverpool WM':
-                    if (substr($accno, 0, 1) == "M") {
-                        $accno = str_replace('.', '', str_replace(' ', '', $accno));
+                    if (stripos($accno, 'prov') !== false) {
+                        $accno = "Provv. " . sprintf("%04d", $numaccno) . $nonnum;
                     }
-                    break;
-                case 'Moscow' :
+                    if (stripos($accno, 'CG') !== false) {
+                        $accno = "CGT " . sprintf("%05d", $numaccno) . $nonnum;
+                    }
+                    if (stripos($accno, 'C') !== false) {
+                        $accno = "Cat. " . sprintf("%04d", $numaccno) . $nonnum;
+                    }
 
-                    if (is_numeric(substr($accno, 0, 1))) {
-                        $accno = "I.1 " . $accno;
-                    } else {
-                        $accno = str_replace('a', 'а', str_replace('b', 'б', $accno));
-                    }
-                    break;
-                case 'Field Museum' :
-                    $pos = firstnum($accno);
-                    $accno = substr($accno, $pos);
-                    break;
-                case 'Stockholm' :
-                    if (substr($accno, 0, 3) == "NME") {
-                        $pos = firstnum($accno);
-                        if (!($pos === false)) {
-                            $accno = "NME " . sprintf("%03d", substr($accno, $pos));
+                    $result = mySQLqueryex($musdef[0], 'inv =', $accno);
+                    if ($result->num_rows === 0 and preg_match("/.*\/.*/", $accno)) {
+                        if (preg_match("/^\d.*/", $accno)) {
+                            $result = mySQLqueryex($musdef[0], 'inv like ', '%' . str_replace("/", "/%", $numaccno . $nonnum));
+                        } else {
+                            $result = mySQLqueryex($musdef[0], 'inv like ', str_replace("/", "/%", $accno));
                         }
-                    } elseif (substr($accno, 0, 3) == "MME") {
-                        $pos = firstnum($accno);
-                        if (!($pos === false)) {
-                            $stknum1 = substr($accno, $pos);
+                    }
+                    if ($result->num_rows === 0) {
 
-                            $endpos = firstnonnum($stknum1);
-                            if (!($endpos === false)) {
-                                $num = substr($stknum1, 0, $endpos);
-                                $nonnum = substr($stknum1, $endpos);
-                                $pos = firstnum($nonnum);
+                        if (!$numaccno == 0) {
+
+                            $result = mySQLqueryex($musdef[0], 'STRIP_NON_DIGIT(inv) =', $numaccno);
+                        }
+                        if ($result->num_rows === 0) {
+                            $url = "http://" . $musdef[6];
+                            RedirUrl($url);
+                            exit();
+                        }
+                    }
+                    ReturnResults($result, $musdef[1], $musdef[2], $mus);
+                } else {
+                    $url = "http://" . $musdef[1];
+                    RedirUrl($url);
+                    exit();
+                }
+            } else {
+                /*                 * ***********************OTHER MUSEUMS */
+                if (in_array($musdef[0], array("Stockholm", "Bibliotheca Alexandrina", "Bologna", "Glasgow Hunterian", "Lyon", "Madrid", "Manchester", "Swansea", "Warszawa"))) {
+                    $protocol = "http";
+                } else {
+                    $protocol = "https";
+                }
+
+                switch ($musdef[0]) {
+                    case 'Genève':
+                        if (is_numeric($accno)) {
+                            $accno = sprintf("%06d", $accno);
+                        } elseif ((preg_match("/^\D\d.*/", $accno)) || (preg_match("/^\D.\d.*/", $accno))) {
+                            $pos = firstnum($accno);
+                            if (!($pos === false)) {
+                                $num = substr($accno, $pos);
+
+                                $endpos = firstnonnum($num);
+                                if (!($endpos === false)) {
+                                    $num = substr($num, 0, $endpos);
+                                    $nonnum = substr($num, $endpos);
+                                }
                                 if (!($pos === false)) {
-                                    $accno = "MME " . $num . ":" . sprintf("%03d", substr($nonnum, $pos));
+                                    $accno = substr($accno, 0, 1) . " " . sprintf("%04d", $num) . $nonnum;
                                 }
                             }
                         }
-                    }
-                    break;
-                case 'Bologna':
-                case 'UC':
-                case 'Wien': //remove all but the digits
-                    $accno = preg_replace('~[^0-9]~', '', $accno);
-                    break;
-                case 'OIM':
-                    if (preg_match("/e/i", substr($accno, 0, 1))) {
-                        $pos = firstnum($accno);
-                        if (!($pos === false)) {
-                            $accno = "E" . substr($accno, $pos);
-                        }
-                    } elseif (preg_match("/\D/i", substr($accno, 0, 1))) {
-                        $accno = preg_replace('~[^\w]~', '', $accno);
-                    } else {
-                        $accno = "E" . $accno;
-                    }
+                        break;
+                    case 'Glasgow Hunterian':
+                        $accno = mb_strtoupper(str_replace(' ', '.', $accno));
+                        if (mb_substr($accno, 0, 6) != 'GLAHM:') {
 
-                    break;
-                case 'Ny Carlsberg':
-                    $accno = preg_replace('~[^0-9]~', '', $accno);
-                    if (is_numeric($accno)) {
-                        $accno = sprintf("%04d", $accno);
-                    }
-                    break;
-                case 'Durham':
-                case 'Swansea':
-                    $accno = preg_replace('~[ .]~', '', $accno);
-                    break;
-                case 'Washington':
-                case 'København':
-                    $accno = str_replace(' ', '', $accno);
-                    break;
-                case 'San Jose':
-                    $accno = str_replace(' ', '-', $accno);
-                    break;
-                case 'Bristol':
-                    $accno = str_replace(' ', '', $accno);
-                    if (is_numeric(substr($accno, 0, 1))) {
-                        if (preg_match('#^(\d+)#', $accno, $match)) {  //Look for the digits
-                            $numno = $match[1];    //Use the digits captured in the brackets from the RegEx match
-                            if ($numno < 5231) {
-                                $accno = "H" . $accno;
+                            if (preg_match("/^\D\d.*/", $accno)) {
+                                $accno = mb_substr($accno, 0, 1) . "." . substr($accno, 1);
+                            }
+                            if (preg_match("/^\d.*/", $accno)) {
+                                $accno = "D." . $accno;
+                            }
+                            $accno = 'GLAHM:' . $accno;
+                        }
+                        //D.1921.35
+
+                        break;
+                    case 'Lyon':
+                        $accno = str_replace('.', ' ', $accno);
+                        if (preg_match("/^\D\d.*/", $accno)) {
+                            $accno = substr($accno, 0, 1) . " " . substr($accno, 1);
+                        }
+                        break;
+                    case 'Allard Pierson':
+                        $accno = preg_replace('~[^0-9]~', '', $accno);
+                        if (is_numeric($accno)) {
+                            $accno = sprintf("%05d", $accno);
+                        }
+                        break;
+                    case 'Walters':
+                    case 'Boston':
+                    case 'Brooklyn':
+                        $accno = preg_replace('/(\d)[-\s\/]+(?=\d)/', '$1.', $accno); // remove spaces and slashes between numbers
+                        if (preg_match("/^\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d$/", $accno) or preg_match("/^\d\d\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d\d\d$/", $accno) or preg_match("/^\d\d\d\d[^0-9.].*/", $accno) or preg_match("/^\d\d\d\d$/", $accno)) {
+                            $accno = substr($accno, 0, 2) . "." . substr($accno, 2);
+                        } elseif (preg_match("/^\d\d\d\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d\d\d\d$/", $accno) or preg_match("/^\d\d\d\d\d\d\d\D.*/", $accno) or preg_match("/^\d\d\d\d\d\d\d$/", $accno)) {
+                            if (substr($accno, 0, 2) == 19 or substr($accno, 0, 2) == 20) {
+                                $accno = substr($accno, 0, 4) . "." . substr($accno, 3);
                             } else {
-                                $accno = "Ha" . $accno;
+                                $accno = substr($accno, 0, 2) . "." . substr($accno, 2);
                             }
                         }
-                    }
-                    break;
-                case 'Sydney':
-                    $accno = str_replace(' ', '', $accno);
-                    if (substr($accno, 0, 2) != "NM") {
+                        break;
+                    case 'Torino':
+                        /*                         * ***********************TORINO */
+                        $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
+                        $pos = firstnum($accno);
+                        if (!($pos === false)) {
+                            $numaccno = substr($accno, $pos);
+                            //  $pref = substr($accno, 0, $pos);
+                            $endpos = firstnonnum($numaccno);
+                            $nonnum = "";
+                            if (!($endpos === false)) {
+                                $nonnum = str_replace(' ', '', substr($numaccno, $endpos));
+                                $numaccno = substr($numaccno, 0, $endpos);
+                            }
+                        }
 
-                        $accno = "NM" . $accno;
-                    }
-                    break;
-                case 'Ashmolean':
-                    $accno = str_replace(' ', '', $accno);
-                    if (is_numeric(substr($accno, 0, 1))) {
+                        if (stripos($accno, 'S') !== false) {
+                            $accno = "inventoryNumber=S. " . $numaccno . $nonnum;
+                        } elseif (stripos($accno, 'prov') !== false) {
+                            $accno = "inventoryNumber=Provv. " . $numaccno . $nonnum;
+                        } elseif (stripos($accno, 'CG') !== false) {
+                            $accno = "cgt=" . $numaccno . $nonnum;
+                        } elseif (stripos($accno, 'C') !== false) {
+                            $accno = "inventoryNumber=Cat. " . $numaccno . $nonnum;
+                        } else {
+                            $accno = "inventoryNumber=" . $accno;
+                        }
+                        break;
+                    case 'Philadelphia':
+                        $accno = preg_replace('~[ .]~', '', $accno);
+                        break;
+                    case 'Liverpool WM':
+                        if (substr($accno, 0, 1) == "M") {
+                            $accno = str_replace('.', '', str_replace(' ', '', $accno));
+                        }
+                        break;
+                    case 'Moscow' :
 
-                        $accno = "AN" . $accno;
-                    }
-                    break;
-                case 'Aberdeen':
-                    $accno = str_replace(' ', '', $accno);
-                    if (is_numeric(substr($accno, 0, 1))) {
+                        if (is_numeric(substr($accno, 0, 1))) {
+                            $accno = "I.1 " . $accno;
+                        } else {
+                            $accno = str_replace('a', 'а', str_replace('b', 'б', $accno));
+                        }
+                        break;
 
-                        $accno = "ABDUA:" . $accno;
-                    }
-                    break;
+                    case 'Glasgow Burrell' :
+                    case 'Glasgow Kelvingrove' :
+                    case 'Field Museum' :
+                        $pos = firstnum($accno);
+                        $accno = substr($accno, $pos);
+                        break;
+                    case 'Stockholm' :
+                        if (substr($accno, 0, 3) == "NME") {
+                            $pos = firstnum($accno);
+                            if (!($pos === false)) {
+                                $accno = "NME " . sprintf("%03d", substr($accno, $pos));
+                            }
+                        } elseif (substr($accno, 0, 3) == "MME") {
+                            $pos = firstnum($accno);
+                            if (!($pos === false)) {
+                                $stknum1 = substr($accno, $pos);
+
+                                $endpos = firstnonnum($stknum1);
+                                if (!($endpos === false)) {
+                                    $num = substr($stknum1, 0, $endpos);
+                                    $nonnum = substr($stknum1, $endpos);
+                                    $pos = firstnum($nonnum);
+                                    if (!($pos === false)) {
+                                        $accno = "MME " . $num . ":" . sprintf("%03d", substr($nonnum, $pos));
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case 'Bologna':
+                    case 'UC':
+                    case 'Wien': //remove all but the digits
+                        $accno = preg_replace('~[^0-9]~', '', $accno);
+                        break;
+                    case 'Chicago ISAC':
+                        if (preg_match("/e/i", substr($accno, 0, 1))) {
+                            $pos = firstnum($accno);
+                            if (!($pos === false)) {
+                                $accno = "E" . substr($accno, $pos);
+                            }
+                        } elseif (preg_match("/\D/i", substr($accno, 0, 1))) {
+                            $accno = preg_replace('~[^\w]~', '', $accno);
+                        } else {
+                            $accno = "E" . $accno;
+                        }
+
+                        break;
+                    case 'Ny Carlsberg':
+                        $accno = preg_replace('~[^0-9]~', '', $accno);
+                        if (is_numeric($accno)) {
+                            $accno = sprintf("%04d", $accno);
+                        }
+                        break;
+                    case 'Durham':
+
+                        $accno = preg_replace('~[ ]~', '', $accno);
+                        if (!(substr($accno, 0, 5) == "DUROM")) {
+                            $accno = preg_replace('~[.]~', '', $accno);
+                        }
+                        break;
+                    case 'Swansea':
+                        $accno = preg_replace('~[ .]~', '', $accno);
+                        break;
+                    case 'Washington':
+                    case 'København':
+                        $accno = str_replace(' ', '', $accno);
+                        break;
+                    case 'San Jose':
+                        $accno = str_replace(' ', '-', $accno);
+                        break;
+                    case 'Bristol':
+                        $accno = str_replace(' ', '', $accno);
+                        if (is_numeric(substr($accno, 0, 1))) {
+                            if (preg_match('#^(\d+)#', $accno, $match)) {  //Look for the digits
+                                $numno = $match[1];    //Use the digits captured in the brackets from the RegEx match
+                                if ($numno < 5231) {
+                                    $accno = "H" . $accno;
+                                } else {
+                                    $accno = "Ha" . $accno;
+                                }
+                            }
+                        }
+                        break;
+                    case "Edinburgh" :
+                        /*                         * ***********************Edinburgh */
+                        $accno = str_replace('  ', ' ', str_replace(' ', '.', $accno));
+                        if (is_numeric(substr($accno, 0, 1))) {
+                            $accno = 'A.' . $accno; // This is Egyptology-specific. ("A" is used for all Egyptian [and possibly other] items in Edinburgh).
+                        }
+
+                        break;
+                    case 'Sydney':
+                        $accno = str_replace(' ', '', $accno);
+                        if (substr($accno, 0, 2) != "NM") {
+
+                            $accno = "NM" . $accno;
+                        }
+                        break;
+                    case 'Ashmolean':
+                        $accno = str_replace(' ', '', $accno);
+                        if (is_numeric(substr($accno, 0, 1))) {
+
+                            $accno = "AN" . $accno;
+                        }
+                        break;
+                    case 'Aberdeen':
+                        $accno = str_replace(' ', '', $accno);
+                        if (is_numeric(substr($accno, 0, 1))) {
+
+                            $accno = "ABDUA:" . $accno;
+                        }
+                        break;
+                    case 'BM':
+                        $accno = str_replace(' ', '', $accno);
+                        if (is_numeric(substr($accno, 0, 1))) {
+
+                            $accno = "EA" . $accno;
+                        }
+                        break;
+                }
+                $url = $protocol . "://" . $musdef[1] . $accno . $musdef[2]; // This line forms the URL for all the museums supporting GET queries
+                RedirUrl($url);
             }
-            $url = $protocol . "://" . $musdef[1] . $accno . $musdef[2]; // This line forms the URL for all the museums supporting GET queries
-            RedirUrl($url);
         }
     }
-}
 // if an unknown museum name is supplied (or no museum name) the start page is displayed
-?>
+    ?>
 <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
         $musconfig = json_decode(file_get_contents("musconfig.json"), true);
         echo($musconfig[6]);
@@ -952,8 +960,8 @@ foreach ($musarray as &$musdef) {
                                 ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
                         </select></td></tr><tr><td align='right'>Inventory number:</td><td align='left'><input type='text' name='no' id='no' style='max-width: 202px; min-width: 202px; width: 202px !important; height: 19px !important; min-height: 19px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;' >
                     </td><tr><td align='right'>&nbsp;</td><td align='left'><input type='submit' value='Search'></td></tr></table> </form><p>&nbsp;</p><p>
-            You can also try the <a href="javascript:void%20function(){function%20a(b,c){var%20d=document.createElement(%22a%22);d.style.display=%22none%22,j.appendChild(d),c%3Fd.target=%22_blank%22:d.setAttribute(%22download%22,%22download.jpg%22),d.href=b,d.click(),j.removeChild(d)}function%20c(b,c,d,e,f){var%20g=c,h=new%20Set(b.match(g));[...h].forEach(function(b,c){setTimeout(function(){var%20c=g.exec(b);g.lastIndex=0,a(d+c[1].replace(/%26amp;/g,%22%26%22)+e,f)},120*(c+1))})}var%20d,e,f,g=window.location.href,h=new%20XMLHttpRequest,j=document.body;if(/britishmuseum\.org/.test(g))f=g.replace(/.*\//gm,%22/api/_object%3Fid=%22),h.onreadystatechange=function(){if(4===h.readyState%26%26200===h.status%26%26h.responseText){var%20b=JSON.parse(h.responseText);b.hits.hits[0]._source.multimedia.forEach(function(b,c){setTimeout(function(){a(%22/api/_image-download%3Fid=%22+b.admin.id,0)},120*(c+1))})}},h.open(%22GET%22,f,!0),h.send(null);else%20if(/brooklynmuseum\.org/.test(g))c(j.innerHTML,/data-full-img-url=%22(.*)%22/gm,%22%22,%22%22,!0);else%20if(/mfa\.org/.test(g)){var%20b=/(\/internal.*%3F3Aformat%253D)postage/gm;b.test(j.innerHTML)%3Fc(j.innerHTML,b,%22%22,%22full%22,0):a(document.getElementsByName(%22og:image%22)[0].getAttribute(%22content%22),0)}else%20if(/louvre\.fr/.test(g))c(j.innerHTML,/data-api-dl=%22(.*%3F)%22/gm,%22%22,%22%22,0);else%20if(/rmo\.nl/.test(g))c(j.innerHTML,/(\/imageproxy\/jpg\/.*%3F)%22/gm,%22%22,%22%22,0);else%20if(/petriecat\.museums\.ucl\.ac\.uk/.test(g)){var%20k=/maxphotos=(\d*)/gm.exec(j.innerHTML)[1];if(d=/object_images\/mid(\/.*%3F)1.jpg%22/gm.exec(j.innerHTML),1==k||null===d)c(j.innerHTML,/object_images\/mid(\/.*%3F.jpg)%22/gm,%22/object_images/full%22,%22%22);else%20for(e=1;e%3C=k;e+=1)a(%22/object_images/full%22+d[1]+e+%22.jpg%22,0)}else%20if(/metmuseum\.org/.test(g))c(j.innerHTML,/data-superjumboimage=%22(.*%3F)%22/gm,%22%22,%22%22,!0);else%20if(/museoegizio\.it/.test(g))c(j.innerHTML,/Download%20%3Ca%20href=%22(.*%3F)%22/gm,%22%22,%22%22,0);else%20if(/oi-idb\.uchicago\.edu/.test(g))c(j.innerHTML,/cycle-slideshow-image-container%22%20href=%22(.*%3F)%22/gm,%22%22,%22%22,!0);else%20if(/carmentis\.kmkg-mrah\.be/.test(g)){var%20b=/href=%22(.*%3F)%22%20data-fancybox=%22images/gm,l=document.getElementById(%22referenceTab-03%22);l.classList.contains(%22referenceTabItem%22)%3F(f=l.getElementsByTagName(%22A%22)[0].getAttribute(%22href%22),h.onreadystatechange=function(){4===h.readyState%26%26200===h.status%26%26h.responseText%26%26c(h.responseText,b,%22%22,%22%22,0)},h.open(%22GET%22,f,!0),h.send(null)):c(j.innerHTML,b,%22%22,%22%22,0)}else%20/harbour\.man\.ac\.uk/.test(g)%3Fc(j.innerHTML,/\%3Firn=(\d*)/gm,%22/emuweb/objects/common/webmedia.php%3Firn=%22,%22%22,0):/bible-orient-museum\.ch/.test(g)%3Fc(j.innerHTML,/background-image:%20url\((.*%3F)\)/gm,%22%22,%22%22,0):/nms.ac\.uk/.test(g)%26%26c(j.innerHTML,/data-zoom-image=%22(.*%3F)%22/gm,%22%22,%22%22,0)}();">
-                Museum Downloader</a> bookmarklet (version 1.4) to facilitate downloading images from online catalogues.
+            You can also try the <a href="javascript:void%20function(){function%20a(b,c){var%20d=document.createElement(%22a%22);if(d.style.display=%22none%22,g.appendChild(d),!0===c)d.target=%22_blank%22;else{var%20a=c%26%26c.exec(g.innerHTML)%3Fc.exec(g.innerHTML)[1].trim():%22download%22;d.setAttribute(%22download%22,a+%22.jpg%22)}d.href=b,d.click(),g.removeChild(d)}function%20c(b,c,d,e,f){var%20g=c,h=new%20Set(b.match(g));[...h].forEach(function(b,c){setTimeout(function(){var%20c=g.exec(b);g.lastIndex=0,a(d+c[1].replace(/%26amp;/g,%22%26%22)+e,f)},120*(c+1))})}var%20d,e=window.location.href,f=new%20XMLHttpRequest,g=document.body;if(/britishmuseum\.org/.test(e))d=e.replace(/.*\//gm,%22/api/_object%3Fid=%22),f.onreadystatechange=function(){if(4===f.readyState%26%26200===f.status%26%26f.responseText){var%20b=JSON.parse(f.responseText);b.hits.hits[0]._source.multimedia.forEach(function(b,c){setTimeout(function(){a(%22/api/_image-download%3Fid=%22+b.admin.id,/=%22object-detail__data-description%22%3E(.+%3F)%3C/)},120*(c+1))})}},f.open(%22GET%22,d,!0),f.send(null);else%20if(/brooklynmuseum\.org/.test(e))c(g.innerHTML,/data-full-img-url=%22(.*)%22/gm,%22%22,%22%22,!0);else%20if(/mfa\.org/.test(e)){var%20b=/(\/internal.*%3F3Aformat%253D)postage/gm;b.test(g.innerHTML)%3Fc(g.innerHTML,b,%22%22,%22full%22,/Accession%20Number%3C\/span%3E%3Cspan%20class=%22detailFieldValue%22%3E(.+%3F)%3C/):a(document.getElementsByName(%22og:image%22)[0].getAttribute(%22content%22),/Accession%20Number%3C\/span%3E%3Cspan%20class=%22detailFieldValue%22%3E(.+%3F)%3C/)}else%20if(/louvre\.fr/.test(e))c(g.innerHTML,/data-api-dl=%22(.*%3F)%22/gm,%22%22,%22%22,/Num%C3%A9ro%20principal\s+%3F:\s+%3F%3C\/span%3E(.+%3F)%3C/);else%20if(/rmo\.nl/.test(e))c(g.innerHTML,/(\/imageproxy\/jpg\/.*%3F)%22/gm,%22%22,%22%22,/Inventarisnummer:(.+%3F)%3C/);else%20if(/collections\.ucl\.ac\.uk/.test(e))c(g.innerHTML,/src=%22(.*%3F)%26amp;width/gm,%22%22,%22%22,/Number%3C\/div%3E%3Cdiv%20class=%22value%22%3ELDUCE-(UC.+%3F)%3C/);else%20if(/metmuseum\.org/.test(e))c(g.innerHTML,/data-superjumboimage=%22(.*%3F)%22/gm,%22%22,%22%22,!0);else%20if(/museoegizio\.it/.test(e))c(g.innerHTML,/Download%20%3Ca%20href=%22(.*%3F)%22/gm,%22%22,%22%22,/col-lg-9%22%3E\s*%3F%3Cspan%20class=%22value%22%3E(.+)%3C/);else%20if(/isac-idb\.uchicago\.edu/.test(e))c(g.innerHTML,/cycle-slideshow-image-container%22%20href=%22(.*%3F)%22/gm,%22%22,%22%22,!0);else%20if(/carmentis\.kmkg-mrah\.be/.test(e)){var%20b=/href=%22(.*%3F)%22%20data-fancybox=%22images/gm,h=document.getElementById(%22referenceTab-03%22);h%26%26h.classList.contains(%22referenceTabItem%22)%3F(d=h.getElementsByTagName(%22A%22)[0].getAttribute(%22href%22),f.onreadystatechange=function(){4===f.readyState%26%26200===f.status%26%26f.responseText%26%26c(f.responseText,b,%22%22,%22%22,/inv=(.+%3F)%26/)},f.open(%22GET%22,d,!0),f.send(null)):c(g.innerHTML,b,%22%22,%22%22,/inv=(.+%3F)%26/)}else%20/harbour\.man\.ac\.uk/.test(e)%3Fc(g.innerHTML,/\%3Firn=(\d*)/gm,%22/emuweb/objects/common/webmedia.php%3Firn=%22,%22%22,0):/bible-orient-museum\.ch/.test(e)%3Fc(g.innerHTML,/background-image:%20url\((.*%3F)\)/gm,%22%22,%22%22,0):/nms.ac\.uk/.test(e)%26%26c(g.innerHTML,/data-zoom-image=%22(.*%3F)%22/gm,%22%22,%22%22,/Museum%20reference%3C\/h3%3E%3Cp%3E(.+%3F)%3C/)}();">
+                Museum Downloader</a> bookmarklet (version 1.5) to facilitate downloading images from online catalogues.
             <br> <a href="#popup1" tabindex="-1">Brief introduction to the bookmarklet.</a>
 
         <div id="popup1" class="overlay">
@@ -962,7 +970,7 @@ foreach ($musarray as &$musdef) {
                 <div class="content">
                     <h2>Egyptological Museum Downloader Bookmarklet</h2>
 
-                    version 1.4 (29 October 2021)
+                    version 1.5 (16 July 2023)
                     <br>
                     The aim of this bookmarklet is to facilitate downloading images of Egyptian 
                     objects from the websites of major museums. 
@@ -985,7 +993,7 @@ foreach ($musarray as &$musdef) {
                     (Brussels), Manchester Museum, National Museums Scotland (Edinburgh), and Bible and Orient Museum (Fribourg).
                     <br> 
                     It opens all images in new tabs for the Brooklyn Museum, Metropolitan Museum, and 
-                    Oriental Institute Museum (Chicago).<br>
+                    Institute for the Study of Ancient Cultures Museum (Chicago).<br>
                     <br> The bookmarklet was tested in Firefox, Chrome, and Edge under Microsoft Windows. It does not work in Internet Explorer.<br>
                     I should like to thank Tobias Konrad for reporting a bug in an earlier version of this bookmarklet.
                 </div>

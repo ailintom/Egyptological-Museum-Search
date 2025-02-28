@@ -36,6 +36,7 @@
  * Version 0.9.2: 16.07.2023 added Glasgow Burrell and Glasgow Kelvingrove
  * Version 0.9.3: 16.07.2023 temporarily removed the use of the BM SPARQL endpoint, because it is very slow
  * Version 0.9.4: 14.11.2023 fixed Budapest, ISAC
+ * Version 0.9.8: 01.10.2024 fixed Manchester, Liverpool, Allard Pierson
  * 
  * 
  * This php script should be used as follows:
@@ -648,6 +649,28 @@ if ($helpmode == "aliases") {
                         exit();
                     }
                     ReturnResults($result, $musdef[1], $musdef[2], $mus);
+                } elseif ($musdef[0] == 'Edinburgh') {
+                    $accno = str_replace('  ', ' ', str_replace(' ', '.', $accno));
+                    if (is_numeric(substr($accno, 0, 1))) {
+                        $accno = 'A.' . $accno; // This is Egyptology-specific. ("A" is used for all Egyptian [and possibly other] items in Edinburgh).
+                    }
+                    $queryURL = "https://www.nms.ac.uk/api/axiell?output=json&database=ChoiceCollect&search=(object_number=%27" . $accno . "%27)&limit=12&startfrom=1";
+#echo ($queryURL);
+                    $json = downloadmusjson($queryURL);
+                    $obj = json_decode($json, true);
+                    #print_r($obj);
+                    $res = [];
+                    if (isset($obj['adlibJSON']['recordList'])) {
+                        $recordList = $obj['adlibJSON']['recordList'];
+
+                        // Iterate over the recordList to get priref and object_number
+                        foreach ($recordList as $record) {
+                            if (isset($record['@priref'], $record['object_number'])) {
+                                array_push($res, [$record['@priref'], $record['object_number']]);
+                            }
+                        }
+                    }
+                    ReturnResultsFromArray($res, "www.nms.ac.uk/search-our-collections/collection-search-results?entry=", "", "Edinburgh");
                 } elseif ($musdef[0] == 'Torino') {
                     /*                     * ***********************TORINO */
                     $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
@@ -755,6 +778,7 @@ if ($helpmode == "aliases") {
                         if (is_numeric($accno)) {
                             $accno = sprintf("%05d", $accno);
                         }
+                        $accno = "%252528U002B%252528SUPERDEFAULT%25253A%252528apm" . $accno . "%252529+DEFAULT%25253A%252528apm" . $accno . "%252529%252529%252529";
                         break;
                     case 'Walters':
                     case 'Boston':
@@ -942,22 +966,22 @@ if ($helpmode == "aliases") {
 // if an unknown museum name is supplied (or no museum name) the start page is displayed
     ?>
 <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
-        $musconfig = json_decode(file_get_contents("musconfig.json"), true);
-        echo($musconfig[6]);
-        showcss();
-        ?>
+    $musconfig = json_decode(file_get_contents("musconfig.json"), true);
+    echo($musconfig[6]);
+    showcss();
+    ?>
     </head> <body> <div class=limit><h2><?php echo($musconfig[7]); ?></h2><p>Select the museum and enter the inventory number </p></div><form action='mus.php' method='get'>
             <table cellspacing="0" style="border-width:0px;border-collapse:collapse;" border =0 id="tab" class="tab">
                 <tr><td align='right'>Museum:</td><td align='left'><select name='museum' id='museum' style='max-width: 204px; min-width: 204px; width: 204px !important; height: 21px !important; min-height: 21px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;'><?php
-                            $sortedarray = array();
-                            foreach ($musarray as &$musdef) {
-                                if ($musdef[4] !== true) {
-                                    $sortedarray[] = $musdef[0];
-                                }
-                            }
-                            natcasesort($sortedarray);
-                            foreach ($sortedarray as &$musdef) {
-                                ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
+        $sortedarray = array();
+        foreach ($musarray as &$musdef) {
+            if ($musdef[4] !== true) {
+                $sortedarray[] = $musdef[0];
+            }
+        }
+        natcasesort($sortedarray);
+        foreach ($sortedarray as &$musdef) {
+        ?><option value='<?php echo ($musdef); ?>'><?php echo ($musdef); ?>  </option>    <?php } ?>
                         </select></td></tr><tr><td align='right'>Inventory number:</td><td align='left'><input type='text' name='no' id='no' style='max-width: 202px; min-width: 202px; width: 202px !important; height: 19px !important; min-height: 19px; border-style: solid; border-width: 1px; -ms-box-sizing:content-box; -moz-box-sizing:content-box; box-sizing:content-box; -webkit-box-sizing:content-box;' >
                     </td><tr><td align='right'>&nbsp;</td><td align='left'><input type='submit' value='Search'></td></tr></table> </form><p>&nbsp;</p><p>
             You can also try the <a href="javascript:void%20function(){function%20a(b,c){var%20d=document.createElement(%22a%22);if(d.style.display=%22none%22,g.appendChild(d),!0===c)d.target=%22_blank%22;else{var%20a=c%26%26c.exec(g.innerHTML)%3Fc.exec(g.innerHTML)[1].trim():%22download%22;d.setAttribute(%22download%22,a+%22.jpg%22)}d.href=b,d.click(),g.removeChild(d)}function%20c(b,c,d,e,f){var%20g=c,h=new%20Set(b.match(g));[...h].forEach(function(b,c){setTimeout(function(){var%20c=g.exec(b);g.lastIndex=0,a(d+c[1].replace(/%26amp;/g,%22%26%22)+e,f)},120*(c+1))})}var%20d,e=window.location.href,f=new%20XMLHttpRequest,g=document.body;if(/britishmuseum\.org/.test(e))d=e.replace(/.*\//gm,%22/api/_object%3Fid=%22),f.onreadystatechange=function(){if(4===f.readyState%26%26200===f.status%26%26f.responseText){var%20b=JSON.parse(f.responseText);b.hits.hits[0]._source.multimedia.forEach(function(b,c){setTimeout(function(){a(%22/api/_image-download%3Fid=%22+b.admin.id,/=%22object-detail__data-description%22%3E(.+%3F)%3C/)},120*(c+1))})}},f.open(%22GET%22,d,!0),f.send(null);else%20if(/brooklynmuseum\.org/.test(e))c(g.innerHTML,/data-full-img-url=%22(.*)%22/gm,%22%22,%22%22,!0);else%20if(/mfa\.org/.test(e)){var%20b=/(\/internal.*%3F3Aformat%253D)postage/gm;b.test(g.innerHTML)%3Fc(g.innerHTML,b,%22%22,%22full%22,/Accession%20Number%3C\/span%3E%3Cspan%20class=%22detailFieldValue%22%3E(.+%3F)%3C/):a(document.getElementsByName(%22og:image%22)[0].getAttribute(%22content%22),/Accession%20Number%3C\/span%3E%3Cspan%20class=%22detailFieldValue%22%3E(.+%3F)%3C/)}else%20if(/louvre\.fr/.test(e))c(g.innerHTML,/data-api-dl=%22(.*%3F)%22/gm,%22%22,%22%22,/Num%C3%A9ro%20principal\s+%3F:\s+%3F%3C\/span%3E(.+%3F)%3C/);else%20if(/rmo\.nl/.test(e))c(g.innerHTML,/(\/imageproxy\/jpg\/.*%3F)%22/gm,%22%22,%22%22,/Inventarisnummer:(.+%3F)%3C/);else%20if(/collections\.ucl\.ac\.uk/.test(e))c(g.innerHTML,/src=%22(.*%3F)%26amp;width/gm,%22%22,%22%22,/Number%3C\/div%3E%3Cdiv%20class=%22value%22%3ELDUCE-(UC.+%3F)%3C/);else%20if(/metmuseum\.org/.test(e))c(g.innerHTML,/data-superjumboimage=%22(.*%3F)%22/gm,%22%22,%22%22,!0);else%20if(/museoegizio\.it/.test(e))c(g.innerHTML,/Download%20%3Ca%20href=%22(.*%3F)%22/gm,%22%22,%22%22,/col-lg-9%22%3E\s*%3F%3Cspan%20class=%22value%22%3E(.+)%3C/);else%20if(/isac-idb\.uchicago\.edu/.test(e))c(g.innerHTML,/cycle-slideshow-image-container%22%20href=%22(.*%3F)%22/gm,%22%22,%22%22,!0);else%20if(/carmentis\.kmkg-mrah\.be/.test(e)){var%20b=/href=%22(.*%3F)%22%20data-fancybox=%22images/gm,h=document.getElementById(%22referenceTab-03%22);h%26%26h.classList.contains(%22referenceTabItem%22)%3F(d=h.getElementsByTagName(%22A%22)[0].getAttribute(%22href%22),f.onreadystatechange=function(){4===f.readyState%26%26200===f.status%26%26f.responseText%26%26c(f.responseText,b,%22%22,%22%22,/inv=(.+%3F)%26/)},f.open(%22GET%22,d,!0),f.send(null)):c(g.innerHTML,b,%22%22,%22%22,/inv=(.+%3F)%26/)}else%20/harbour\.man\.ac\.uk/.test(e)%3Fc(g.innerHTML,/\%3Firn=(\d*)/gm,%22/emuweb/objects/common/webmedia.php%3Firn=%22,%22%22,0):/bible-orient-museum\.ch/.test(e)%3Fc(g.innerHTML,/background-image:%20url\((.*%3F)\)/gm,%22%22,%22%22,0):/nms.ac\.uk/.test(e)%26%26c(g.innerHTML,/data-zoom-image=%22(.*%3F)%22/gm,%22%22,%22%22,/Museum%20reference%3C\/h3%3E%3Cp%3E(.+%3F)%3C/)}();">

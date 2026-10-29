@@ -3,7 +3,8 @@ A PHP tool to search the objects by inventory numbers in various online museum c
 
 * Author: Alexander Ilin-Tomich
 * Created at Johannes Gutenberg University, Mainz
-* Date: 20.12.2016
+* First published: 20.12.2016
+* Current version: 01.10.2024
 * Licensed under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) license https://creativecommons.org/licenses/by-sa/4.0/
  Includes code snippets originally posted under CC BY-SA 3.0 on http://stackoverflow.com
  (original authors: Stanislav Shabalin, user1467716 and wally) as indicated in the comments to the respective parts

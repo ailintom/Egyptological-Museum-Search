@@ -88,6 +88,18 @@ function firstnum($text) {
     }
 }
 
+function getQueryString($name) {
+    $value = filter_input(INPUT_GET, $name, FILTER_UNSAFE_RAW, FILTER_FLAG_STRIP_LOW);
+    if ($value === null) {
+        return '';
+    }
+    if ($value === false) {
+        http_response_code(400);
+        exit("Invalid query parameter: " . $name);
+    }
+    return str_replace(array("'", '"'), array('&#39;', '&#34;'), strip_tags($value));
+}
+
 function showcss() {
     ?> <style type="text/css"> .limit {
             max-width: 720px;
@@ -171,8 +183,9 @@ function showcss() {
         curl_setopt($curl_handle, CURLOPT_USERAGENT, $musconfig[4]);
 // Execute
         $res = curl_exec($curl_handle);
-// Closing
-        curl_close($curl_handle);
+        if ($res === false) {
+            error_log("Museum request failed: " . curl_error($curl_handle));
+        }
         return $res;
     }
 
@@ -198,8 +211,9 @@ function showcss() {
         curl_setopt($curl_handle, CURLOPT_USERAGENT, $musconfig[4]);
 // Execute
         $res = curl_exec($curl_handle);
-// Closing
-        curl_close($curl_handle);
+        if ($res === false) {
+            error_log("Museum request failed: " . curl_error($curl_handle));
+        }
 
         return $res;
     }
@@ -227,6 +241,7 @@ function showcss() {
 function mySQLqueryex($mus, $searchfieldop, $sqlWHERE) {
 
     $musconfig = json_decode(file_get_contents("musconfig.json"), true);
+    mysqli_report(MYSQLI_REPORT_OFF);
     $mysqli = new mysqli($musconfig[0], $musconfig[1], $musconfig[2], $musconfig[3]);
     if ($mysqli->connect_errno) {
         ?>
@@ -324,7 +339,7 @@ function RedirUrl($urlinput) {
 $found = false;
 $musarray = json_decode(file_get_contents("museumdefinitions.json"), true); //Loads museum definitions
 $musaliases = json_decode(file_get_contents("musaliases.json"), true); //Loads museum aliases
-$helpmode = filter_input(INPUT_GET, 'help', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW); // Loads the help attribute used to display help (.../mus.php?help=help) and aliases (.../mus.php?help=aliases)
+$helpmode = getQueryString('help'); // Loads the help attribute used to display help (.../mus.php?help=help) and aliases (.../mus.php?help=aliases)
 if ($helpmode == "aliases") {
     ?>
     <!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html> <head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
@@ -419,8 +434,8 @@ if ($helpmode == "aliases") {
         exit();
     }
 // This is the beginning of the main procedure
-    $mus = filter_input(INPUT_GET, 'museum', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW); // Gets the parameters of the GET query containing the museum name and the searched inventory number
-    $accno = trim(filter_input(INPUT_GET, 'no', FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW));
+    $mus = getQueryString('museum'); // Gets the parameters of the GET query containing the museum name and the searched inventory number
+    $accno = trim(getQueryString('no'));
     $accno = trim(str_replace("&#34;", '', str_replace('"', '', $accno))); // removes quotation signs
     if (strcasecmp(substr($accno, 0, 4), 'inv.') == 0 or strcasecmp(substr($accno, 0, 4), 'inv ') == 0) { // removes the word inv. from the beginning of the searched string
         $accno = trim(substr($accno, 4));
@@ -452,16 +467,28 @@ if ($helpmode == "aliases") {
             $accno = "0" . $accno;
         }
         $url = "https://collectionapi.metmuseum.org/public/collection/v1/search?q=" . str_replace(" ", "%20", $accno);
-        $MMAjson = json_decode(downloadmusjson($url), true);
-        $webid = array_slice($MMAjson["objectIDs"], 0, 5);
+        $response = downloadmusjson($url);
+        $MMAjson = $response === false ? null : json_decode($response, true);
+        if (!is_array($MMAjson) || !array_key_exists('objectIDs', $MMAjson) ||
+                (!is_array($MMAjson['objectIDs']) && !($MMAjson['objectIDs'] === null && ($MMAjson['total'] ?? null) === 0))) {
+            error_log("Invalid MMA search response");
+            $webid = array();
+        } else {
+            $webid = array_slice($MMAjson['objectIDs'] ?? array(), 0, 5);
+        }
         $mmaids = array();
 // Test the results and filter those with inventory matching the searched value
         $cnt = 0;
         foreach ($webid as &$searchres) {
             $url = "https://collectionapi.metmuseum.org/public/collection/v1/objects/" . $searchres;
-            $objectjson = json_decode(downloadmusjson($url), true);
+            $response = downloadmusjson($url);
+            $objectjson = $response === false ? null : json_decode($response, true);
+            if (!isset($objectjson['accessionNumber']) || !is_string($objectjson['accessionNumber'])) {
+                error_log("Invalid MMA object response for " . $searchres);
+                continue;
+            }
             $cnt = $cnt + 1;
-            if (($objectjson['accessionNumber'] == $accno) or preg_match("/" . preg_quote($accno) . "\D.*/", $objectjson['accessionNumber'])) {
+            if (($objectjson['accessionNumber'] == $accno) or preg_match("/" . preg_quote($accno, '/') . "\D.*/", $objectjson['accessionNumber'])) {
                 $mmaids[] = array($searchres, $objectjson['accessionNumber']);
             } elseif ($cnt > 0) {
                 break;
@@ -478,18 +505,29 @@ if ($helpmode == "aliases") {
     } elseif ($mus === 'Fitzwilliam') {
         $accno = str_replace(" ", ".", $accno);
         $url = "http://data.fitzmuseum.cam.ac.uk/api/?query=ObjectNumber:" . $accno;
-        $Fitzjson = json_decode(downloadmusjson($url), true);
-        if ($Fitzjson["total"] > 0) {
+        $response = downloadmusjson($url);
+        $Fitzjson = $response === false ? null : json_decode($response, true);
+        $mmaids = array();
+        if (!is_array($Fitzjson) || !isset($Fitzjson['total']) ||
+                ($Fitzjson['total'] > 0 && (!isset($Fitzjson['results']) || !is_array($Fitzjson['results'])))) {
+            error_log("Invalid Fitzwilliam search response");
+        } elseif ($Fitzjson["total"] > 0 && is_array($Fitzjson['results'])) {
             $webid = $Fitzjson["results"];
             foreach ($webid as &$searchres) {
-                if (($searchres['ObjectNumber'] == $accno) or preg_match("/" . preg_quote($accno) . "\D.*/", $searchres['ObjectNumber'])) {
+                if (!isset($searchres['ObjectNumber'], $searchres['priref']) || !is_string($searchres['ObjectNumber'])) {
+                    error_log("Invalid Fitzwilliam object response");
+                    continue;
+                }
+                if (($searchres['ObjectNumber'] == $accno) or preg_match("/" . preg_quote($accno, '/') . "\D.*/", $searchres['ObjectNumber'])) {
 
                     $mmaids[] = array($searchres['priref'], $searchres['ObjectNumber']);
                 }
             }
             if (count($mmaids) == 0) {
                 foreach ($webid as &$searchres) {
-                    $mmaids[] = array($searchres['priref'], $searchres['ObjectNumber']);
+                    if (isset($searchres['ObjectNumber'], $searchres['priref']) && is_string($searchres['ObjectNumber'])) {
+                        $mmaids[] = array($searchres['priref'], $searchres['ObjectNumber']);
+                    }
                 }
             }
             if (count($mmaids) > 0) {
@@ -657,16 +695,19 @@ if ($helpmode == "aliases") {
                     $queryURL = "https://www.nms.ac.uk/api/axiell?output=json&database=ChoiceCollect&search=(object_number=%27" . $accno . "%27)&limit=12&startfrom=1";
 #echo ($queryURL);
                     $json = downloadmusjson($queryURL);
-                    $obj = json_decode($json, true);
+                    $obj = $json === false ? null : json_decode($json, true);
                     #print_r($obj);
                     $res = [];
-                    if (isset($obj['adlibJSON']['recordList'])) {
+                    if (isset($obj['adlibJSON']['recordList']) && is_array($obj['adlibJSON']['recordList'])) {
                         $recordList = $obj['adlibJSON']['recordList'];
 
                         // Iterate over the recordList to get priref and object_number
                         foreach ($recordList as $record) {
                             if (isset($record['@priref'], $record['object_number'])) {
                                 array_push($res, [$record['@priref'], $record['object_number']]);
+                            }
+                            if (!is_array($obj)) {
+                                error_log("Invalid Edinburgh search response");
                             }
                         }
                     }
@@ -675,6 +716,8 @@ if ($helpmode == "aliases") {
                     /*                     * ***********************TORINO */
                     $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
                     $pos = firstnum($accno);
+                    $numaccno = '';
+                    $nonnum = '';
                     if (!($pos === false)) {
                         $numaccno = substr($accno, $pos);
                         //  $pref = substr($accno, 0, $pos);
@@ -734,6 +777,7 @@ if ($helpmode == "aliases") {
 
                 switch ($musdef[0]) {
                     case 'Genève':
+                        $nonnum = '';
                         if (is_numeric($accno)) {
                             $accno = sprintf("%06d", $accno);
                         } elseif ((preg_match("/^\D\d.*/", $accno)) || (preg_match("/^\D.\d.*/", $accno))) {
@@ -743,8 +787,8 @@ if ($helpmode == "aliases") {
 
                                 $endpos = firstnonnum($num);
                                 if (!($endpos === false)) {
-                                    $num = substr($num, 0, $endpos);
                                     $nonnum = substr($num, $endpos);
+                                    $num = substr($num, 0, $endpos);
                                 }
                                 if (!($pos === false)) {
                                     $accno = substr($accno, 0, 1) . " " . sprintf("%04d", $num) . $nonnum;
@@ -798,6 +842,8 @@ if ($helpmode == "aliases") {
                         /*                         * ***********************TORINO */
                         $accno = preg_replace('/(\d)[. ](?=\d)/', '$1', $accno);
                         $pos = firstnum($accno);
+                        $numaccno = '';
+                        $nonnum = '';
                         if (!($pos === false)) {
                             $numaccno = substr($accno, $pos);
                             //  $pref = substr($accno, 0, $pos);

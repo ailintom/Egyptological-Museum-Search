@@ -18,7 +18,9 @@ A PHP tool to search the objects by inventory numbers in various online museum c
   .../mus.php?museum=AAA&no=###
   Where AAA is the museum name and ### is the object's accession number.
 
-  The script was developed for PHP 5.3 and was tested to work with a MySQL-compatible Percona Database on an Apache server of a shared web-hosting.
+  The script was originally developed for PHP 5.3 and supports PHP 8.4. It requires the PHP cURL, MySQLi and mbstring extensions; local-database searches also require a MySQL-compatible database. It was originally tested with a Percona database on an Apache shared-hosting server.
+
+  To run the PHP compatibility checks, execute `php tests/mus-compat.php` from the project directory.
   
   It operates in different modes depending on the architecture of each museum's website. 
   It aims to form correct search URLs for museums websites, which support GET queries.

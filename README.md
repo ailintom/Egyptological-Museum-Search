@@ -4,7 +4,7 @@ A PHP tool to search the objects by inventory numbers in various online museum c
 * Author: Alexander Ilin-Tomich
 * Created at Johannes Gutenberg University, Mainz
 * First published: 20.12.2016
-* Current version: 01.10.2024
+* Current version: 29.10.2026
 * Licensed under Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) license https://creativecommons.org/licenses/by-sa/4.0/
  Includes code snippets originally posted under CC BY-SA 3.0 on http://stackoverflow.com
  (original authors: Stanislav Shabalin, user1467716 and wally) as indicated in the comments to the respective parts
@@ -25,6 +25,7 @@ A PHP tool to search the objects by inventory numbers in various online museum c
   It operates in different modes depending on the architecture of each museum's website. 
   It aims to form correct search URLs for museums websites, which support GET queries.
   It retrieves search results in JSON from the museums, which provide this option.  
+  Metropolitan Museum searches use its Collection API to find matching objects, falling back to the museum's accession-number search page when no matches are found or the API is unavailable. München searches use the museum's online collection.
   It relies on the information scraped from the museum catalogues that do not support GET queries and do not provide search results
   in JSON. For this end, the script connects to a MySQL database with the scraped information. (The scrape scripts written in R are not included in the current version of the program source).
   The database can be created using mus.sql. The script connects to it using on the credentials in musconfig.json (which one has to edit accordingly). 

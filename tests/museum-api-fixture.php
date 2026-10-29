@@ -29,13 +29,32 @@ function curl_exec($handle) {
     if ($number === 'INVALID') {
         return '{invalid';
     }
-    if (strpos($handle->url, 'collection/v1/search?') !== false) {
-        return $number === 'ZERO'
-            ? '{"total":0,"objectIDs":null}'
-            : '{"total":1,"objectIDs":[123]}';
+    if (strpos($handle->url, 'collection/v1.1/search?') !== false) {
+        parse_str(parse_url($handle->url, PHP_URL_QUERY), $query);
+        $normalized = array('35-3-110' => '35.3.110', '5.3.110' => '05.3.110');
+        $expected = $normalized[$number] ?? $number;
+        if (($query['q'] ?? null) !== $expected || ($query['isAccessionNumber'] ?? null) !== 'true' ||
+                ($query['limit'] ?? null) !== '5') {
+            throw new RuntimeException('Unexpected MMA search parameters');
+        }
+        if ($number === 'ZERO' || $number === 'A/1&B') {
+            return '{"total":0,"objectIDs":null}';
+        }
+        return '{"total":2,"objectIDs":[101,102]}';
     }
-    if (strpos($handle->url, 'collection/v1/objects/') !== false) {
-        return json_encode(array('accessionNumber' => $number));
+    if (preg_match('~/collection/v1/objects/(\d+)$~', $handle->url, $match)) {
+        if ($number === 'BADOBJECT') {
+            return '{invalid';
+        }
+        if ($number === 'MISMATCH') {
+            $accession = $match[1] === '101' ? 'OTHER' : 'MISMATCH';
+        } elseif ($number === 'MULTI') {
+            $accession = $match[1] === '101' ? 'MULTI' : 'MULTIa';
+        } else {
+            $normalized = array('35-3-110' => '35.3.110', '5.3.110' => '05.3.110');
+            $accession = $match[1] === '101' ? ($normalized[$number] ?? $number) : 'OTHER';
+        }
+        return json_encode(array('accessionNumber' => $accession));
     }
     if (strpos($handle->url, 'data.fitzmuseum.cam.ac.uk/api/') !== false) {
         return '{"total":1,"results":[{"priref":456,"ObjectNumber":"OTHER"}]}';

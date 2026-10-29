@@ -300,10 +300,11 @@ function ReturnResults($result, $pref, $postf, $mus) {
  * $result - a mysqli_result object
  * $pref - the part of of the object display page URL before the webid
  * $postf - the part of of the object display page URL after the webid
- * $mus - museum name */
-function ReturnResultsFromArray($res, $pref, $postf, $mus) {
+ * $mus - museum name
+ * $protocol - URL scheme for the results */
+function ReturnResultsFromArray($res, $pref, $postf, $mus, $protocol = "http") {
     if (sizeof($res) == 1) {
-        $url = "http://" . $pref . $res[0][0] . $postf;
+        $url = $protocol . "://" . $pref . $res[0][0] . $postf;
         RedirUrl($url);
     } elseif (sizeof($res) > 1) {
         ?><!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01//EN' 'http://www.w3.org/TR/html4/strict.dtd'><html> <head><meta name="viewport" content="width=device-width, initial-scale=1.0"><?php
@@ -315,7 +316,7 @@ function ReturnResultsFromArray($res, $pref, $postf, $mus) {
                 <p>Select the suitable object, please:</p><ul>
                     <?php
                     foreach ($res as &$row) {
-                        $url = "http://" . $pref . $row[0] . $postf;
+                        $url = $protocol . "://" . $pref . $row[0] . $postf;
                         ?>
                         <li><a href=' <?php echo( str_replace('&', '&amp;', $url)); ?> '>
                                 <?php echo( $row[1]); ?>
@@ -457,47 +458,46 @@ if ($helpmode == "aliases") {
     }
     $accno = trim(str_ireplace($mus, '', $accno)); // removes the name of the museum from the searched string in case the user has entered it twice
     /*     * *********************** MMA  */
-// MMA is processed here separately for in case of no match from JSON query, the standard MMA search page will be returned by the usual procedure
     if ($mus === 'MMA') {
-        //This part of the code fetches the JSON file with search results from MMA and redirects the user to the results
-        // If the JSON contains no results the basic MMA search procedure will be performed later
-        $accno = preg_replace('/(\d)[-\s\/]+(?=\d)/', '$1.', $accno); //replace spaces and slashes between digits with spaces
+        $accno = preg_replace('/(\d)[-\s\/]+(?=\d)/', '$1.', $accno); //replace separators between digits with dots
         $accno = preg_replace('/(?<=\d)\s+(?=\D)/', '', $accno); //remove spaces between the number and the extension
         if (preg_match("/^\d\.\d.*/", $accno)) {
             $accno = "0" . $accno;
         }
-        $url = "https://collectionapi.metmuseum.org/public/collection/v1/search?q=" . str_replace(" ", "%20", $accno);
-        $response = downloadmusjson($url);
-        $MMAjson = $response === false ? null : json_decode($response, true);
-        if (!is_array($MMAjson) || !array_key_exists('objectIDs', $MMAjson) ||
-                (!is_array($MMAjson['objectIDs']) && !($MMAjson['objectIDs'] === null && ($MMAjson['total'] ?? null) === 0))) {
-            error_log("Invalid MMA search response");
-            $webid = array();
-        } else {
-            $webid = array_slice($MMAjson['objectIDs'] ?? array(), 0, 5);
-        }
-        $mmaids = array();
-// Test the results and filter those with inventory matching the searched value
-        $cnt = 0;
-        foreach ($webid as &$searchres) {
-            $url = "https://collectionapi.metmuseum.org/public/collection/v1/objects/" . $searchres;
+        if ($accno !== '') {
+            $url = "https://collectionapi.metmuseum.org/public/collection/v1.1/search?isAccessionNumber=true&limit=5&q=" . rawurlencode($accno);
             $response = downloadmusjson($url);
-            $objectjson = $response === false ? null : json_decode($response, true);
-            if (!isset($objectjson['accessionNumber']) || !is_string($objectjson['accessionNumber'])) {
-                error_log("Invalid MMA object response for " . $searchres);
-                continue;
+            $MMAjson = $response === false ? null : json_decode($response, true);
+            if (!is_array($MMAjson) || !array_key_exists('objectIDs', $MMAjson) ||
+                    (!is_array($MMAjson['objectIDs']) && !($MMAjson['objectIDs'] === null && ($MMAjson['total'] ?? null) === 0))) {
+                error_log("Invalid MMA search response");
+                $webid = array();
+            } else {
+                $webid = array_slice($MMAjson['objectIDs'] ?? array(), 0, 5);
             }
-            $cnt = $cnt + 1;
-            if (($objectjson['accessionNumber'] == $accno) or preg_match("/" . preg_quote($accno, '/') . "\D.*/", $objectjson['accessionNumber'])) {
-                $mmaids[] = array($searchres, $objectjson['accessionNumber']);
-            } elseif ($cnt > 0) {
-                break;
+            $mmaids = array();
+            foreach ($webid as $searchres) {
+                if (!is_int($searchres) && !(is_string($searchres) && preg_match('/^[0-9]+$/D', $searchres))) {
+                    error_log("Invalid MMA object ID in search response");
+                    continue;
+                }
+                $url = "https://collectionapi.metmuseum.org/public/collection/v1/objects/" . $searchres;
+                $response = downloadmusjson($url);
+                $objectjson = $response === false ? null : json_decode($response, true);
+                if (!isset($objectjson['accessionNumber']) || !is_string($objectjson['accessionNumber'])) {
+                    error_log("Invalid MMA object response for " . $searchres);
+                    continue;
+                }
+                if ($objectjson['accessionNumber'] === $accno ||
+                        preg_match("/^" . preg_quote($accno, '/') . "\D.*/", $objectjson['accessionNumber'])) {
+                    $mmaids[] = array($searchres, $objectjson['accessionNumber']);
+                }
+            }
+            if (count($mmaids) > 0) {
+                ReturnResultsFromArray($mmaids, "www.metmuseum.org/art/collection/search/", "", $mus, "https");
             }
         }
-
-        if (count($mmaids) > 0) {
-            ReturnResultsFromArray($mmaids, "www.metmuseum.org/art/collection/search/", "", $mus);
-        }
+        $accno = rawurlencode($accno);
     } elseif ($mus === 'Berlin') {
         if (is_numeric(substr($accno, 0, 1))) {
             $accno = "ÄM " . $accno;
@@ -776,6 +776,9 @@ if ($helpmode == "aliases") {
                 }
 
                 switch ($musdef[0]) {
+                    case 'München':
+                        $accno = rawurlencode(rawurlencode($accno));
+                        break;
                     case 'Genève':
                         $nonnum = '';
                         if (is_numeric($accno)) {

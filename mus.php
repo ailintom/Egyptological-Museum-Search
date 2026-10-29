@@ -502,6 +502,7 @@ if ($helpmode == "aliases") {
         if (is_numeric(substr($accno, 0, 1))) {
             $accno = "ÄM " . $accno;
         }
+        $accno = urlencode($accno);
     } elseif ($mus === 'Fitzwilliam') {
         $accno = str_replace(" ", ".", $accno);
         $url = "http://data.fitzmuseum.cam.ac.uk/api/?query=ObjectNumber:" . $accno;

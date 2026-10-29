@@ -59,6 +59,7 @@ try {
         array('?museum=BM', 200, 'britishmuseum.org'),
         array('?museum=unknown&no=1', 200, 'Select the museum'),
         array('?museum=Gen%C3%A8ve&no=D50a', 200, 'D 0050a'),
+        array('?museum=Berlin&no=1634', 200, 'window.location.href = "https://search.smb.museum/?q=%C3%84M+1634&sammlungen=Ägyptisches+Museum+und+Papyrussammlung&has_images=false";'),
         array('?museum=Torino&no=Cat.', 200, 'inventoryNumber=Cat.'),
         array('?museum=MMA&no=35.3.110', 200, 'window.location.href = "https://www.metmuseum.org/art/collection/search/101";'),
         array('?museum=Met&no=35-3-110', 200, 'window.location.href = "https://www.metmuseum.org/art/collection/search/101";'),
